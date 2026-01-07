@@ -1,0 +1,11 @@
+# Ignora le cartelle pesanti delle dipendenze
+node_modules/
+/server/node_modules/
+/client/node_modules/
+
+# Ignora i file di sistema e log
+.DS_Store
+npm-debug.log*
+
+# IMPORTANTE: Ignora le chiavi segrete
+/server/.env

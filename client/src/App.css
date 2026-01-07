@@ -1,0 +1,35 @@
+body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+
+.visual-background {
+  position: absolute; top: 0; left: 0; z-index: -1;
+}
+
+.ui-container {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 400px; max-height: 80vh;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+  border-radius: 20px; padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex; flex-direction: column; gap: 15px;
+}
+
+.chat-box {
+  height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+  padding-right: 5px;
+}
+
+.message {
+  padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px;
+}
+.message.bot { align-self: flex-start; background: #e0e0e0; color: #333; }
+.message.user { align-self: flex-end; background: #007bff; color: white; }
+
+.input-area { display: flex; gap: 10px; }
+.input-area input {
+  flex: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc; outline: none;
+}
+.input-area button {
+  padding: 10px 20px; border-radius: 20px; border: none; background: #007bff; color: white; cursor: pointer;
+}
+.spotify-player { border-radius: 12px; overflow: hidden; }
