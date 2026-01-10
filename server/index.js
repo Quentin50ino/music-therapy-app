@@ -1,24 +1,25 @@
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
-const { Server } = require("socket.io");
+// const { Server } = require("socket.io"); // NON SERVE PIÙ, PUOI RIMUOVERLO
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const SpotifyWebApi = require('spotify-web-api-node'); 
 const cors = require('cors');
+const axios = require('axios'); 
 
 const app = express();
-app.use(cors());
+
+// --- MIDDLEWARE FONDAMENTALI ---
+app.use(cors()); 
+app.use(express.json()); // <--- IMPORTANTISSIMO: Senza questo req.body è vuoto!
 
 const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*", methods: ["GET", "POST"] }
-});
 
 // --- GEMINI SETUP ---
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 let geminiModel;
 try {
-    geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+    geminiModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 } catch (e) {
     geminiModel = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
 }
@@ -30,7 +31,6 @@ const spotifyApi = new SpotifyWebApi({
 });
 
 let spotifyToken = null;
-
 const refreshSpotifyToken = async () => {
   try {
     const data = await spotifyApi.clientCredentialsGrant();
@@ -43,109 +43,158 @@ const refreshSpotifyToken = async () => {
 refreshSpotifyToken();
 setInterval(refreshSpotifyToken, 1000 * 60 * 50);
 
-// --- NUOVA FUNZIONE DI RICERCA (Search API invece di Recommendations) ---
+// --- FUNZIONE RICERCA SPOTIFY ---
 async function searchSpotifyTrack(query) {
     if (!spotifyToken) throw new Error("Token non pronto");
 
-    // Costruiamo la URL per la ricerca testuale
     const params = new URLSearchParams({
-        q: query,       // Es: "sad piano music"
-        type: 'track',  // Cerchiamo canzoni
-        limit: '1'      // Ne vogliamo una sola
+        q: query,
+        type: 'track',
+        limit: '1'
     });
 
+    // URL Standard
     const url = `https://api.spotify.com/v1/search?${params.toString()}`;
-    console.log(`🔎 Cerco su Spotify: "${query}" -> ${url}`);
-
+    
     const response = await fetch(url, {
-        headers: {
-            'Authorization': `Bearer ${spotifyToken}`
-        }
+        headers: { 'Authorization': `Bearer ${spotifyToken}` }
     });
 
-    if (!response.ok) {
-        const errorBody = await response.text();
-        throw new Error(`Spotify API Error ${response.status}: ${errorBody}`);
-    }
-
+    if (!response.ok) throw new Error(`Spotify Error`);
     const data = await response.json();
-    return data.tracks.items; // Nota: la struttura qui è tracks.items
+    return data.tracks.items;
 }
 
-io.on('connection', (socket) => {
-  console.log('🔌 Utente connesso');
+// --- FUNZIONE LAST.FM / ANALISI ---
+async function getAudioFeaturesExternal(artist, trackName, geminiMood) {
+    const apiKey = process.env.LASTFM_API_KEY;
 
-  socket.on('userMessage', async (text) => {
+    if (!apiKey) {
+        console.warn("⚠️ Manca LASTFM_API_KEY. Uso fallback.");
+        return createFallbackData(geminiMood);
+    }
+
     try {
-      console.log("Utente dice:", text);
+        console.log(`⏳ [Last.fm] Analizzo: ${trackName} - ${artist}`);
+        const url = `http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(trackName)}&format=json`;
 
-      // 1. Chiediamo a Gemini non numeri, ma PAROLE CHIAVE
-      const prompt = `
-        Sei un DJ terapeuta. Analizza: "${text}".
+        const response = await axios.get(url, { timeout: 3000 });
         
-        Rispondi SOLO JSON valido.
-        {
-          "reply": "risposta empatica (max 15 parole)",
-          "searchQuery": "una frase di ricerca in inglese per trovare una canzone su Spotify adatta all'umore (es: 'sad piano melancholic', 'energetic pop hits', 'calm ambient meditation')",
-          "mood": {
-             "valence": (0.0 a 1.0 - serve solo per la grafica),
-             "energy": (0.0 a 1.0 - serve solo per la grafica)
-          }
+        let tags = [];
+        let duration = 0;
+
+        if (response.data && response.data.track) {
+            if(response.data.track.toptags && response.data.track.toptags.tag) {
+                const tagData = response.data.track.toptags.tag;
+                if (Array.isArray(tagData)) {
+                    tags = tagData.map(t => t.name).slice(0, 5);
+                } else if (tagData.name) {
+                    tags = [tagData.name];
+                }
+            }
+            duration = response.data.track.duration || 0;
         }
-      `;
 
-      let result;
-      try {
-          result = await geminiModel.generateContent(prompt);
-      } catch (e) {
-          const fallback = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-          result = await fallback.generateContent(prompt);
-      }
+        let estimatedBPM = 100;
+        if (geminiMood && geminiMood.energy) {
+            estimatedBPM = Math.round(60 + (geminiMood.energy * 120));
+        }
 
-      let textResponse = await result.response.text();
-      textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-      // Pulizia JSON aggressiva
-      if(textResponse.indexOf('{') > 0) textResponse = textResponse.substring(textResponse.indexOf('{'));
-      if(textResponse.lastIndexOf('}') < textResponse.length - 1) textResponse = textResponse.substring(0, textResponse.lastIndexOf('}') + 1);
-
-      const aiData = JSON.parse(textResponse);
-      console.log("🧠 Gemini Search Query:", aiData.searchQuery);
-
-      // 2. Chiamata Spotify SEARCH (Molto più stabile)
-      let trackId = null;
-      try {
-          // Usiamo la frase generata da Gemini per cercare la canzone
-          const tracks = await searchSpotifyTrack(aiData.searchQuery);
-          
-          if (tracks && tracks.length > 0) {
-              trackId = tracks[0].id;
-              console.log(`🎵 Trovata: ${tracks[0].name} - ${tracks[0].artists[0].name}`);
-          } else {
-              console.log("⚠️ Nessuna traccia, provo fallback");
-              const backup = await searchSpotifyTrack('relaxing music');
-              if(backup.length > 0) trackId = backup[0].id;
-          }
-      } catch (spotifyErr) {
-          console.error("❌ Errore Spotify:", spotifyErr.message);
-      }
-
-      socket.emit('botResponse', {
-        reply: aiData.reply,
-        trackId: trackId,
-        mood: aiData.mood
-      });
+        return {
+            source: "Last.fm + Gemini Logic",
+            tags: tags,
+            bpm: estimatedBPM,
+            mood: geminiMood,
+            duration_ms: duration
+        };
 
     } catch (error) {
-      console.error("❌ Errore Generale:", error);
-      socket.emit('botResponse', { 
-        reply: "Sono qui, ascoltiamo qualcosa di rilassante.", 
-        trackId: "4uLU6hMCjMI75M1A2tKUQC", // Never Gonna Give You Up come fallback estremo (o cambiala con una classica)
-        mood: { valence: 0.5, energy: 0.5 }
-      });
+        console.error(`❌ [Last.fm] Errore: ${error.message}`);
+        return createFallbackData(geminiMood);
     }
-  });
+}
+
+function createFallbackData(geminiMood) {
+    return {
+        source: "Fallback Gemini",
+        tags: ["music"],
+        bpm: geminiMood ? Math.round(60 + (geminiMood.energy * 120)) : 100,
+        mood: geminiMood || { valence: 0.5, energy: 0.5 }
+    };
+}
+
+// ==========================================================
+// --- API ENDPOINT (Sostituisce Socket.io) ---
+// ==========================================================
+app.post('/chat', async (req, res) => {
+    try {
+        // 1. Leggiamo il messaggio dal BODY della richiesta
+        const userText = req.body.message;
+        console.log("📩 Messaggio ricevuto:", userText);
+
+        if (!userText) {
+            return res.status(400).json({ error: "Messaggio vuoto" });
+        }
+
+        // --- 2. GEMINI ---
+        const prompt = `
+            Sei un DJ terapeuta. Analizza: "${userText}".
+            Rispondi SOLO JSON valido.
+            {
+              "reply": "risposta empatica (max 15 parole)",
+              "searchQuery": "frase ricerca spotify (es: 'sad piano melancholic')",
+              "mood": { "valence": 0.5, "energy": 0.5 }
+            }
+        `;
+
+        let result = await geminiModel.generateContent(prompt);
+        let textResponse = await result.response.text();
+        
+        // Pulizia JSON
+        textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+        if(textResponse.indexOf('{') > 0) textResponse = textResponse.substring(textResponse.indexOf('{'));
+        if(textResponse.lastIndexOf('}') < textResponse.length - 1) textResponse = textResponse.substring(0, textResponse.lastIndexOf('}') + 1);
+        
+        const aiData = JSON.parse(textResponse);
+
+        // --- 3. SPOTIFY & LAST.FM ---
+        let trackInfo = null;
+        let audioAnalysis = null;
+        
+        try {
+            const tracks = await searchSpotifyTrack(aiData.searchQuery);
+            if (tracks && tracks.length > 0) {
+                const track = tracks[0];
+                console.log(`🎵 Trovata: ${track.name}`);
+
+                audioAnalysis = await getAudioFeaturesExternal(track.artists[0].name, track.name, aiData.mood);
+
+                trackInfo = {
+                    id: track.id,
+                    title: track.name,
+                    artist: track.artists[0].name,
+                    cover: track.album.images[0]?.url,
+                    preview: track.preview_url
+                };
+            }
+        } catch (err) {
+            console.error("Errore Musica:", err.message);
+        }
+
+        // --- 4. RISPOSTA HTTP ---
+        // Invece di socket.emit, usiamo res.json
+        res.json({
+            reply: aiData.reply,
+            track: trackInfo,
+            analysis: audioAnalysis
+        });
+
+    } catch (error) {
+        console.error("❌ Errore Server:", error);
+        res.status(500).json({ error: "Errore interno del server" });
+    }
 });
 
 server.listen(3001, () => {
-  console.log('🚀 Server Search-API avviato su http://localhost:3001');
+  console.log('🚀 Server API pronto su http://localhost:3001');
 });
