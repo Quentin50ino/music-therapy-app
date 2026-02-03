@@ -1,21 +1,19 @@
 import React, { useEffect, useRef } from "react";
 import Sketch from "react-p5";
 
-// ===============================================
-// 1. CONFIGURAZIONE PRESET SUONI (Colore + Fisica)
-// ===============================================
+
+// 1. CONFIGURAZIONE PRESET SUONI
 const SOUND_PRESETS = {
   off:      { hue: 210, sat: 80,  speed: 1.0, size: 1.0 }, // Ocean Blue
-  brown:    { hue: 25,  sat: 90,  speed: 0.5, size: 1.5 }, // Deep Earth/Lava (Lento e grande)
-  green:    { hue: 130, sat: 70,  speed: 1.2, size: 1.1 }, // Forest Green (Organico)
-  pink:     { hue: 320, sat: 60,  speed: 1.8, size: 0.7 }, // Soft Pink (Veloce e piccolo - Pioggia)
-  binaural: { hue: 260, sat: 90,  speed: 0.2, size: 1.3 }, // Electric Purple (Quasi fermo - Focus)
-  '432':    { hue: 45,  sat: 100, speed: 0.3, size: 1.6 }, // Gold (Molto lento - Solenne)
+  brown:    { hue: 25,  sat: 90,  speed: 0.5, size: 1.5 }, // Deep Earth
+  green:    { hue: 130, sat: 70,  speed: 1.2, size: 1.1 }, // Forest
+  pink:     { hue: 320, sat: 60,  speed: 1.8, size: 0.7 }, // Rain
+  binaural: { hue: 260, sat: 90,  speed: 0.2, size: 1.3 }, // Focus
+  '432':    { hue: 45,  sat: 100, speed: 0.3, size: 1.6 }, // Gold
 };
 
-// ===============================================
+
 // 2. HELPER FUNCTIONS
-// ===============================================
 
 const setGradient = (p5, x, y, w, h, c1, c2) => {
   p5.noFill();
@@ -56,26 +54,19 @@ const drawFractalRing = (p5, sentence, symmetry, len, angle, hue, weight) => {
   }
 };
 
-// ===============================================
-// 3. CLASSI
-// ===============================================
 
+// 3. CLASSI
 class FluidParticle {
   constructor(p5, x, y, dna, initialPreset) {
     this.pos = p5.createVector(x, y);
     this.vel = p5.createVector(p5.random(-1, 1), p5.random(-1, 1));
     this.acc = p5.createVector(0, 0);
     
-    // DNA base
     this.baseSpeed = dna.speed;
     this.baseSize = dna.size;
     
-    // Stato Corrente (per le transizioni fluide)
     this.currentHue = initialPreset ? initialPreset.hue : 210;
-    this.targetHue = this.currentHue;
-    
     this.currentSat = initialPreset ? initialPreset.sat : 80;
-    
     this.speedMult = 1.0;
     this.sizeMult = 1.0;
 
@@ -87,38 +78,27 @@ class FluidParticle {
     this.isDeadState = false;
   }
 
-  // Riceve il preset attuale (dal suono)
   update(p5, preset) {
-    // 1. Interpolazione Colore (Lerp)
-    // Se il suono cambia, il colore cambia gradualmente, non a scatto
-    // Gestione speciale per il passaggio ciclico (es. da 350 a 10)
     let diff = preset.hue - this.currentHue;
     if (Math.abs(diff) > 180) { 
         if (diff > 0) this.currentHue += 360; 
         else this.currentHue -= 360; 
     }
     this.currentHue = p5.lerp(this.currentHue, preset.hue, 0.05);
-    // Normalizza hue tra 0 e 360
     if (this.currentHue > 360) this.currentHue -= 360;
     if (this.currentHue < 0) this.currentHue += 360;
 
     this.currentSat = p5.lerp(this.currentSat, preset.sat, 0.05);
-    
-    // 2. Interpolazione Fisica
     this.speedMult = p5.lerp(this.speedMult, preset.speed, 0.05);
     this.sizeMult = p5.lerp(this.sizeMult, preset.size, 0.05);
 
-    // 3. Movimento Standard
     let angle = p5.noise(this.xOff, this.yOff, p5.frameCount * 0.005) * p5.TWO_PI * 2;
     let force = p5.createVector(p5.cos(angle), p5.sin(angle));
     force.mult(0.1); 
     
     this.acc.add(force);
     this.vel.add(this.acc);
-    
-    // Applica moltiplicatore velocità del suono
     this.vel.limit((this.baseSpeed * 0.5) * this.speedMult);
-    
     this.pos.add(this.vel);
     this.acc.mult(0);
     
@@ -132,46 +112,35 @@ class FluidParticle {
     if (this.pos.y < 0) this.pos.y = p5.height;
   }
 
+  // --- RENDERING "GLOW" / BOKEH ---
   display(p5) {
-      p5.noStroke();
-      
-      // Calcoliamo una variazione pulsante per far sembrare la particella "viva" (respiro)
-      // Non solo si muove, ma "respira" leggermente
-      let breath = p5.sin(p5.frameCount * 0.05 + this.pulseOffset);
-      let sizeVar = p5.map(breath, -1, 1, 0.9, 1.1); // Variazione del 10%
+    p5.noStroke();
+    let breath = p5.sin(p5.frameCount * 0.05 + this.pulseOffset);
+    let sizeVar = p5.map(breath, -1, 1, 0.9, 1.1); 
+    let baseR = this.baseSize * this.sizeMult * sizeVar;
+    let dynamicHue = (this.currentHue + p5.sin(p5.frameCount * 0.01) * 5) % 360;
+    
+    let alpha = 1;
+    if (this.age < 100) alpha = p5.map(this.age, 0, 100, 0, 1); 
+    else if (this.age > this.lifespan - 100) alpha = p5.map(this.age, this.lifespan - 100, this.lifespan, 1, 0); 
+    if (this.age > this.lifespan) { this.isDeadState = true; alpha = 0; }
 
-      // Dimensione finale basata sul DNA, il suono e il respiro
-      let baseR = this.baseSize * this.sizeMult * sizeVar;
+    // 1. Alone Esterno (Largo e soffuso)
+    p5.fill(dynamicHue, this.currentSat, 100, 0.03 * alpha); 
+    p5.circle(this.pos.x, this.pos.y, baseR * 8);
 
-      // Colore dinamico
-      let dynamicHue = (this.currentHue + p5.sin(p5.frameCount * 0.01) * 5) % 360;
-      
-      // Gestione Alpha (Vita)
-      let alpha = 1;
-      if (this.age < 100) alpha = p5.map(this.age, 0, 100, 0, 1); 
-      else if (this.age > this.lifespan - 100) alpha = p5.map(this.age, this.lifespan - 100, this.lifespan, 1, 0); 
-      if (this.age > this.lifespan) { this.isDeadState = true; alpha = 0; }
+    // 2. Corpo (Medio)
+    p5.fill(dynamicHue, this.currentSat, 100, 0.1 * alpha); 
+    p5.circle(this.pos.x, this.pos.y, baseR * 4);
 
-      // --- RENDERING "BOKEH" (GLOW) ---
-      // Invece di 2 cerchi, ne disegniamo 3 molto soffusi per creare un gradiente di luce
-      
-      // 1. Alone Esterno (Molto largo e impercettibile)
-      p5.fill(dynamicHue, this.currentSat, 100, 0.03 * alpha); 
-      p5.circle(this.pos.x, this.pos.y, baseR * 8);
-
-      // 2. Alone Medio (Il corpo della medusa)
-      p5.fill(dynamicHue, this.currentSat, 100, 0.1 * alpha); 
-      p5.circle(this.pos.x, this.pos.y, baseR * 4);
-
-      // 3. Nucleo (Più definito ma sempre morbido)
-      p5.fill(dynamicHue, this.currentSat - 20, 100, 0.4 * alpha);
-      p5.circle(this.pos.x, this.pos.y, baseR * 1.5);
-      
-      // 4. Punto Luce (Il cuore brillante, opzionale, per dare "focus")
-      // Lo rendiamo quasi bianco per dare l'idea di fonte luminosa
-      p5.fill(dynamicHue, 20, 100, 0.6 * alpha);
-      p5.circle(this.pos.x, this.pos.y, baseR * 0.5);
-    }
+    // 3. Nucleo (Più visibile)
+    p5.fill(dynamicHue, this.currentSat - 20, 100, 0.4 * alpha);
+    p5.circle(this.pos.x, this.pos.y, baseR * 1.5);
+    
+    // 4. Punto Luce (Focus)
+    p5.fill(dynamicHue, 20, 100, 0.6 * alpha);
+    p5.circle(this.pos.x, this.pos.y, baseR * 0.5);
+  }
 
   shouldReproduce(p5) {
     return this.age > this.lifespan * 0.5 && this.age < this.lifespan * 0.51 && p5.random(1) < 0.8;
@@ -182,7 +151,6 @@ class FluidParticle {
         speed: this.baseSpeed + p5.random(-0.1, 0.1), 
         size: this.baseSize * p5.random(0.9, 1.1)     
     };
-    // Passiamo lo stato attuale del genitore (colore) per continuità
     let presetSnapshot = { hue: this.currentHue, sat: this.currentSat, speed: this.speedMult, size: this.sizeMult };
     return new FluidParticle(p5, this.pos.x, this.pos.y, newDna, presetSnapshot);
   }
@@ -307,14 +275,12 @@ class TextParticle {
   finished() { return this.life < 0; }
 }
 
-// ===============================================
-// 4. COMPONENTE REACT
-// ===============================================
 
+// 4. COMPONENTE REACT
 const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInteraction }) => {
   const modeRef = useRef(mode);
   const moodRef = useRef(moodData);
-  const ambientTypeRef = useRef(ambientType); // Ref per accesso dentro p5
+  const ambientTypeRef = useRef(ambientType); 
 
   const organisms = useRef([]);      
   const textParticles = useRef([]);  
@@ -346,9 +312,7 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
   };
 
   const spawnFluidParticles = (p5, count, x = null, y = null) => {
-    // Otteniamo il preset corrente per dare il colore giusto alle nuove particelle
     const currentPreset = SOUND_PRESETS[ambientTypeRef.current] || SOUND_PRESETS['off'];
-
     for(let i=0; i<count; i++) {
       const dna = {
         speed: p5.random(0.5, 1.5),
@@ -360,19 +324,47 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
     }
   };
 
+  // --- BACKGROUND FRATTALE RICORSIVO (VERSIONE STABILE E VISIBILE) ---
+  const drawRecursiveFractalBackground = (p5) => {
+    p5.push();
+    p5.translate(p5.width / 2, p5.height / 2);
+    // Rotazione lentissima impercettibile (per evitare mal di mare)
+    p5.rotate(p5.frameCount * 0.0005);
+
+    const drawCircle = (x, y, d, depth) => {
+        if (depth === 0) return;
+
+        p5.noFill();
+        // Colore AUMENTATO in opacità per essere visibile (0.35 invece di 0.15)
+        p5.stroke(220, 60, 40, 0.35); 
+        p5.strokeWeight(1);
+        p5.circle(x, y, d);
+
+        if (depth > 1) {
+            const newD = d * 0.5;
+            if (newD > 10) {
+                for (let i = 0; i < 6; i++) {
+                    const angle = (p5.TWO_PI / 6) * i;
+                    const nx = x + Math.cos(angle) * (d * 0.5);
+                    const ny = y + Math.sin(angle) * (d * 0.5);
+                    drawCircle(nx, ny, newD, depth - 1);
+                }
+            }
+        }
+    };
+
+    // Un grande frattale che copre tutto
+    drawCircle(0, 0, p5.width * 0.6, 4);
+    p5.pop();
+  };
+
   const drawFluidBackground = (p5) => {
     p5.blendMode(p5.ADD); 
-    
-    // Identifichiamo il preset target in base al suono attuale
     const targetPreset = SOUND_PRESETS[ambientTypeRef.current] || SOUND_PRESETS['off'];
-
     for (let i = organisms.current.length - 1; i >= 0; i--) {
       let org = organisms.current[i];
-      
-      // Passiamo il targetPreset alla particella che si aggiornerà gradualmente
       org.update(p5, targetPreset);
       org.display(p5);
-      
       if (org.shouldReproduce(p5) && organisms.current.length < 120) {
         organisms.current.push(org.reproduce(p5));
       }
@@ -380,13 +372,13 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
           organisms.current.splice(i, 1);
       }
     }
-    // Ripopola solo se in Flow Mode
     if (organisms.current.length < 20 && modeRef.current === 'flow') {
         spawnFluidParticles(p5, 5);
     }
     p5.blendMode(p5.BLEND); 
   };
 
+  // --- SCENA RESPIRO CONTENUTA (NO SCHERMO INTERO) ---
   const drawBreathScene = (p5) => {
     const time = p5.millis() / 1000;
     const cycleDuration = 6.0;
@@ -396,42 +388,39 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
     p5.push();
     p5.translate(p5.width / 2, p5.height / 2);
 
-    const mainAngle = p5.radians(p5.map(breathCycle, 0, 1, 15, 30));
-    const mainLen = p5.map(breathCycle, 0, 1, 5, 12); 
+    const mainAngle = p5.radians(p5.map(breathCycle, 0, 1, 15, 25));
+    // Dimensione di base (contenuta)
+    const mainLen = p5.map(breathCycle, 0, 1, 3, 6);
 
+    // LAYER 1
     p5.push();
     p5.rotate(time * 0.05);
     let hue1 = p5.map(breathCycle, 0, 1, 180, 200); 
-    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue1, 2);
+    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue1, 1.5);
     p5.pop();
 
+    // LAYER 2
     p5.push();
     p5.rotate(-time * 0.03);
-    p5.scale(p5.map(breathCycle, 0, 1, 1.1, 1.6)); 
+    p5.scale(1.2); // Scala piccola
     let hue2 = p5.map(breathCycle, 0, 1, 200, 230); 
-    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue2, 1.5);
+    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue2, 1.0);
     p5.pop();
-
+    
+    // LAYER 3 (Aggiuntivo ma contenuto)
     p5.push();
     p5.rotate(time * 0.02);
-    p5.scale(p5.map(breathCycle, 0, 1, 1.5, 2.5)); 
-    let hue3 = p5.map(breathCycle, 0, 1, 230, 260); 
-    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue3, 1);
+    p5.scale(1.4); // Max scala 1.4x (non 4.0x!)
+    let hue3 = p5.map(breathCycle, 0, 1, 230, 260);
+    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue3, 0.8);
     p5.pop();
 
-    p5.push();
-    p5.rotate(-time * 0.01); 
-    p5.scale(p5.map(breathCycle, 0, 1, 2.0, 4.0)); 
-    let hue4 = p5.map(breathCycle, 0, 1, 260, 290); 
-    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue4, 0.8);
-    p5.pop();
-
-    p5.drawingContext.shadowBlur = 30;
-    p5.drawingContext.shadowColor = 'rgba(255,255,255,0.8)';
+    p5.drawingContext.shadowBlur = 20;
+    p5.drawingContext.shadowColor = 'rgba(255,255,255,0.5)';
     p5.fill(255);
     p5.noStroke();
     p5.textAlign(p5.CENTER, p5.CENTER);
-    p5.textSize(22); 
+    p5.textSize(18);
     p5.text(breathCycle > 0.5 ? "ESPIRA" : "ISPIRA", 0, 0);
     p5.drawingContext.shadowBlur = 0;
     p5.pop();
@@ -466,8 +455,6 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
   const draw = (p5) => {
     const currentMode = modeRef.current;
     
-    // SFONDO COMUNE (Gradient di base)
-    // Nota: Il gradiente di sfondo rimane scuro per far risaltare le particelle colorate
     let c1 = p5.color(230, 80, 15); 
     let c2 = p5.color(200, 70, 25); 
     setGradient(p5, 0, 0, p5.width, p5.height, c1, c2);
@@ -475,6 +462,9 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
     if (currentMode === "flow") {
         drawFluidBackground(p5);
     } else if (currentMode === "breathe") {
+        // 1. Sfondo geometrico (NON frastagliato, NON veloce, ma visibile)
+        drawRecursiveFractalBackground(p5);
+        // 2. Mandala (Piccolo e contenuto)
         drawBreathScene(p5);
     }
 
