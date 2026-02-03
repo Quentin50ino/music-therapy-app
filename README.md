@@ -1,4 +1,4 @@
-[# DJ Therapist AI: A Generative Digital Therapeutics Platform
+# DJ Therapist AI: A Generative Digital Therapeutics Platform
 
 ## 1. Abstract
 **DJ Therapist AI** is a web-based **Digital Therapeutics (DTx)** application designed to support emotional regulation and mental well-being through the convergence of Artificial Intelligence, Music Therapy, and Generative Art.
