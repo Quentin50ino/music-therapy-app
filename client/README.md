@@ -1,70 +1,55 @@
-# Getting Started with Create React App
+# DJ Therapist AI: Interactive Music & Visual Therapy
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### 1-line description
+A holistic web application merging generative AI, music therapy, and interactive generative art to promote mental well-being and emotional regulation.
 
-## Available Scripts
+### Description
+**DJ Therapist AI** is a digital safe space designed for users seeking relaxation, emotional venting, or guidance. The user experience is divided into three interconnected, neuro-aesthetics-driven components:
 
-In the project directory, you can run:
+1.  **AI Counseling & Music:** An empathic chatbot (powered by **Google Gemini**) that dialogues with the user, analyzes text sentiment, and suggests **Spotify** tracks tuned to the detected mood, creating a personalized soundscape.
+2.  **Evolutionary Visualizer:** A generative background built in **p5.js** that reacts to different modes. In "Flow Mode," fluid particles evolve and move organically, simulating a calming deep-ocean environment.
+3.  **Therapeutic Rituals:**
+    * **Breathe Mode:** A guided interface for deep breathing (coherence technique). During inspiration, chaotic particles vanish to reveal giant concentric fractal mandalas (L-Systems) that expand to fill the screen, pulsing in sync with the breath cycle to reduce cognitive load.
+    * **Burn Thoughts:** A digital catharsis ritual. The user types a negative thought; after 3 seconds of focus, the text visually ignites. We implemented a realistic combustion system (via "Additive Layering") and procedural audio feedback (rumble and crackle) generated in real-time without external audio files.
 
-### `npm start`
+### Challenges, accomplishments, and lessons learned
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+* **Challenges:** The biggest technical challenge was managing **advanced graphics rendering** within React. Specifically, the "Burn Thoughts" feature struggled with converting text to particle coordinates due to asynchronous font loading. We solved this by implementing a **"Pixel Scanning"** technique on an invisible graphics buffer, making the effect robust across all devices. **Deployment** also required effort to correctly configure CORS policies and environment variables between the client (Firebase) and the server (Render).
+* **Accomplishments:** We are proud of the **Particle Engine**. We achieved a "liquid fire" effect using *additive blending* and multiple color layers, resulting in a realistic look without heavy shaders. Another major milestone was the **Audio Engine**: instead of using static MP3 files, we utilized the **Web Audio API** to synthesize Brown Noise and dynamic filters in real-time, perfectly synchronized with the visual animations.
+* **Lessons learned:** We learned the importance of decoupling frontend/backend architecture for scalability and how to manage security in production. Furthermore, we deepened our understanding of the math behind Fractal systems (L-Systems) and how recursive geometric patterns can positively influence a user's cognitive state.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Technology
+* **Frontend:** React.js, p5.js (Creative Coding), CSS3.
+* **Audio:** Web Audio API (Real-time procedural synthesis).
+* **Backend:** Node.js, Express.js.
+* **AI & APIs:** Google Gemini API (NLP & Sentiment Analysis), Spotify API (Music Recommendation).
+* **Deployment:** Firebase Hosting (Frontend), Render (Backend).
+* **Concepts:** L-Systems (Fractals), Particle Systems, Additive Blending, Pixel Scanning.
 
-### `npm test`
+### Students
+* **Alberto Bollino:** 
+* **Wilma Bertilsson:** 
+* **Matteo Orlandin:** 
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Links
+* **GitHub Repo:** [INSERT GITHUB LINK HERE](https://github.com/Quentin50ino/music-therapy-app)]
+* **Web App Demo:** [\[INSERT FIREBASE LINK HERE, e.g., https://music-therapy-app.web.app](https://music-therapy-app-246ba.web.app/)]
+* **Video Demo:** [INSERT VIDEO LINK HERE]
+* **Presentation:** [INSERT SLIDES LINK HERE]
 
-### `npm run build`
+### 1 thumbnail image related to the projects
+![Project Thumbnail](assets/thumbnail.jpg)
+*(Format: 1024x768. Representative image, e.g., Flow Mode)*
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Pictures
+![Flow Mode Chat](assets/screenshot_flow.jpg)
+*Flow Mode featuring the AI Chat interface and fluid particles.*
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+![Breathe Mode](assets/screenshot_breathe.jpg)
+*Breathe Mode with expanding concentric fractals.*
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+![Burn Ritual](assets/screenshot_burn.jpg)
+*The "Burn Thoughts" ritual with the realistic particle fire effect.*
 
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### Video
+[INSERT VIDEO LINK OR EMBED HERE]
