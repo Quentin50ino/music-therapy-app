@@ -15,6 +15,12 @@ app.use(express.json()); // <--- IMPORTANTISSIMO: Senza questo req.body è vuoto
 
 const server = http.createServer(app);
 
+// In sviluppo permettiamo tutto, in produzione specificheremo il dominio
+app.use(cors({
+  origin: process.env.CLIENT_URL || "http://localhost:3000", 
+  credentials: true
+}));
+
 // --- GEMINI SETUP ---
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 let geminiModel;
