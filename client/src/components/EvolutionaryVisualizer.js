@@ -1,8 +1,9 @@
 import React, { useEffect, useRef } from "react";
 import Sketch from "react-p5";
 
-
+// ===============================================
 // 1. CONFIGURAZIONE PRESET SUONI
+// ===============================================
 const SOUND_PRESETS = {
   off:      { hue: 210, sat: 80,  speed: 1.0, size: 1.0 }, // Ocean Blue
   brown:    { hue: 25,  sat: 90,  speed: 0.5, size: 1.5 }, // Deep Earth
@@ -12,8 +13,9 @@ const SOUND_PRESETS = {
   '432':    { hue: 45,  sat: 100, speed: 0.3, size: 1.6 }, // Gold
 };
 
-
+// ===============================================
 // 2. HELPER FUNCTIONS
+// ===============================================
 
 const setGradient = (p5, x, y, w, h, c1, c2) => {
   p5.noFill();
@@ -25,11 +27,11 @@ const setGradient = (p5, x, y, w, h, c1, c2) => {
   }
 };
 
-const renderTurtle = (p5, sentence, len, angle, hueBase) => {
+const renderTurtle = (p5, sentence, len, angle, hueBase, satBase) => {
   for (let i = 0; i < sentence.length; i++) {
     let char = sentence.charAt(i);
     if (char === "F") {
-      p5.stroke(hueBase + (i % 20), 70, 95, 0.5);
+      p5.stroke(hueBase + (i % 20), satBase, 95, 0.6);
       p5.line(0, 0, 0, -len);
       p5.translate(0, -len);
     } else if (char === "+") {
@@ -44,18 +46,20 @@ const renderTurtle = (p5, sentence, len, angle, hueBase) => {
   }
 };
 
-const drawFractalRing = (p5, sentence, symmetry, len, angle, hue, weight) => {
+const drawFractalRing = (p5, sentence, symmetry, len, angle, hue, sat, weight) => {
   for (let i = 0; i < symmetry; i++) {
     p5.rotate(p5.TWO_PI / symmetry);
     p5.push();
     p5.strokeWeight(weight);
-    renderTurtle(p5, sentence, len, angle, hue);
+    renderTurtle(p5, sentence, len, angle, hue, sat);
     p5.pop();
   }
 };
 
-
+// ===============================================
 // 3. CLASSI
+// ===============================================
+
 class FluidParticle {
   constructor(p5, x, y, dna, initialPreset) {
     this.pos = p5.createVector(x, y);
@@ -112,7 +116,6 @@ class FluidParticle {
     if (this.pos.y < 0) this.pos.y = p5.height;
   }
 
-  // --- RENDERING "GLOW" / BOKEH ---
   display(p5) {
     p5.noStroke();
     let breath = p5.sin(p5.frameCount * 0.05 + this.pulseOffset);
@@ -125,19 +128,15 @@ class FluidParticle {
     else if (this.age > this.lifespan - 100) alpha = p5.map(this.age, this.lifespan - 100, this.lifespan, 1, 0); 
     if (this.age > this.lifespan) { this.isDeadState = true; alpha = 0; }
 
-    // 1. Alone Esterno (Largo e soffuso)
     p5.fill(dynamicHue, this.currentSat, 100, 0.03 * alpha); 
     p5.circle(this.pos.x, this.pos.y, baseR * 8);
 
-    // 2. Corpo (Medio)
     p5.fill(dynamicHue, this.currentSat, 100, 0.1 * alpha); 
     p5.circle(this.pos.x, this.pos.y, baseR * 4);
 
-    // 3. Nucleo (Più visibile)
     p5.fill(dynamicHue, this.currentSat - 20, 100, 0.4 * alpha);
     p5.circle(this.pos.x, this.pos.y, baseR * 1.5);
     
-    // 4. Punto Luce (Focus)
     p5.fill(dynamicHue, 20, 100, 0.6 * alpha);
     p5.circle(this.pos.x, this.pos.y, baseR * 0.5);
   }
@@ -176,40 +175,6 @@ class Ripple {
         p5.stroke(180, 20, 100, p5.map(this.life, 0, 255, 0, 0.3));
         p5.circle(this.pos.x, this.pos.y, this.size * 0.7);
     }
-  }
-  isDead() { return this.life < 0; }
-}
-
-class FractalFlower {
-  constructor(x, y, dnaString) {
-    this.pos = { x, y };
-    this.dna = dnaString;
-    this.life = 255;
-    this.hue = Math.random() * 60 + 160; 
-    this.rotationSpeed = (Math.random() - 0.5) * 0.01;
-    this.scale = 0;
-    this.maxScale = 0.4 + Math.random() * 0.4;
-  }
-  update() {
-    this.life -= 1.0;
-    if (this.scale < this.maxScale) this.scale += 0.01;
-  }
-  display(p5, breathCycle, globalAngle) {
-    p5.push();
-    p5.translate(this.pos.x, this.pos.y);
-    p5.scale(this.scale);
-    p5.rotate(p5.millis() * 0.0005 + this.rotationSpeed * 50);
-    
-    let pulseLen = p5.map(breathCycle, 0, 1, 3, 5);
-    
-    for (let i = 0; i < 5; i++) {
-      p5.rotate(p5.TWO_PI / 5);
-      p5.push();
-      p5.strokeWeight(1);
-      renderTurtle(p5, this.dna, pulseLen, globalAngle * 1.5, this.hue);
-      p5.pop();
-    }
-    p5.pop();
   }
   isDead() { return this.life < 0; }
 }
@@ -275,8 +240,10 @@ class TextParticle {
   finished() { return this.life < 0; }
 }
 
-
+// ===============================================
 // 4. COMPONENTE REACT
+// ===============================================
+
 const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInteraction }) => {
   const modeRef = useRef(mode);
   const moodRef = useRef(moodData);
@@ -284,8 +251,7 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
 
   const organisms = useRef([]);      
   const textParticles = useRef([]);  
-  const fractalFlowers = useRef([]); 
-  const ripples = useRef([]);        
+  const ripples = useRef([]); 
 
   const p5Ref = useRef(null);
   const mainLSystem = useRef("");
@@ -324,20 +290,29 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
     }
   };
 
-  // --- BACKGROUND FRATTALE RICORSIVO (VERSIONE STABILE E VISIBILE) ---
-  const drawRecursiveFractalBackground = (p5) => {
+  // --- BACKGROUND FRATTALE SINCRONIZZATO COL RESPIRO ---
+  const drawRecursiveFractalBackground = (p5, preset, breathCycle) => {
     p5.push();
     p5.translate(p5.width / 2, p5.height / 2);
-    // Rotazione lentissima impercettibile (per evitare mal di mare)
-    p5.rotate(p5.frameCount * 0.0005);
+    
+    // Rotazione costante
+    p5.rotate(p5.frameCount * 0.001 * preset.speed);
+
+    // Mappatura del respiro (0-1) su effetti visivi
+    // Quando inspiri (breathCycle sale), la luce aumenta
+    let breathWeight = 1 + (breathCycle * 1.5); // Da 1 a 2.5 spessore
+    let breathAlpha = 0.25 + (breathCycle * 0.25); // Da 0.25 a 0.5 opacità
+    let breathScale = 1.0 + (breathCycle * 0.1); // Leggera espansione (zoom)
+
+    p5.scale(breathScale);
 
     const drawCircle = (x, y, d, depth) => {
         if (depth === 0) return;
 
         p5.noFill();
-        // Colore AUMENTATO in opacità per essere visibile (0.35 invece di 0.15)
-        p5.stroke(220, 60, 40, 0.35); 
-        p5.strokeWeight(1);
+        // Colore sincronizzato
+        p5.stroke(preset.hue, preset.sat, 60 + (breathCycle * 20), breathAlpha); 
+        p5.strokeWeight(breathWeight);
         p5.circle(x, y, d);
 
         if (depth > 1) {
@@ -353,8 +328,8 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
         }
     };
 
-    // Un grande frattale che copre tutto
-    drawCircle(0, 0, p5.width * 0.6, 4);
+    let baseSize = p5.width * 0.6; 
+    drawCircle(0, 0, baseSize, 4);
     p5.pop();
   };
 
@@ -378,43 +353,42 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
     p5.blendMode(p5.BLEND); 
   };
 
-  // --- SCENA RESPIRO CONTENUTA (NO SCHERMO INTERO) ---
-  const drawBreathScene = (p5) => {
+  // --- SCENA RESPIRO ---
+  // Riceve breathCycle calcolato nella funzione draw principale
+  const drawBreathScene = (p5, breathCycle) => {
     const time = p5.millis() / 1000;
-    const cycleDuration = 6.0;
-    const rawSin = Math.sin((time * (Math.PI * 2)) / cycleDuration - Math.PI / 2);
-    const breathCycle = (rawSin + 1) / 2; 
+    const preset = SOUND_PRESETS[ambientTypeRef.current] || SOUND_PRESETS['off'];
 
     p5.push();
     p5.translate(p5.width / 2, p5.height / 2);
 
     const mainAngle = p5.radians(p5.map(breathCycle, 0, 1, 15, 25));
-    // Dimensione di base (contenuta)
     const mainLen = p5.map(breathCycle, 0, 1, 3, 6);
 
     // LAYER 1
     p5.push();
-    p5.rotate(time * 0.05);
-    let hue1 = p5.map(breathCycle, 0, 1, 180, 200); 
-    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue1, 1.5);
+    p5.rotate(time * 0.05 * preset.speed);
+    let hue1 = (preset.hue - 10 + 360) % 360; 
+    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue1, preset.sat, 1.5);
     p5.pop();
 
     // LAYER 2
     p5.push();
-    p5.rotate(-time * 0.03);
-    p5.scale(1.2); // Scala piccola
-    let hue2 = p5.map(breathCycle, 0, 1, 200, 230); 
-    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue2, 1.0);
+    p5.rotate(-time * 0.03 * preset.speed);
+    p5.scale(1.2); 
+    let hue2 = preset.hue; 
+    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue2, preset.sat, 1.0);
     p5.pop();
     
-    // LAYER 3 (Aggiuntivo ma contenuto)
+    // LAYER 3
     p5.push();
-    p5.rotate(time * 0.02);
-    p5.scale(1.4); // Max scala 1.4x (non 4.0x!)
-    let hue3 = p5.map(breathCycle, 0, 1, 230, 260);
-    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue3, 0.8);
+    p5.rotate(time * 0.02 * preset.speed);
+    p5.scale(1.4); 
+    let hue3 = (preset.hue + 10) % 360;
+    drawFractalRing(p5, mainLSystem.current, 6, mainLen, mainAngle, hue3, preset.sat, 0.8);
     p5.pop();
 
+    // Testo
     p5.drawingContext.shadowBlur = 20;
     p5.drawingContext.shadowColor = 'rgba(255,255,255,0.5)';
     p5.fill(255);
@@ -424,13 +398,6 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
     p5.text(breathCycle > 0.5 ? "ESPIRA" : "ISPIRA", 0, 0);
     p5.drawingContext.shadowBlur = 0;
     p5.pop();
-
-    for (let i = fractalFlowers.current.length - 1; i >= 0; i--) {
-      let flower = fractalFlowers.current[i];
-      flower.update();
-      flower.display(p5, breathCycle, mainAngle);
-      if (flower.isDead()) fractalFlowers.current.splice(i, 1);
-    }
   };
 
   const drawTextParticles = (p5) => {
@@ -454,18 +421,30 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
 
   const draw = (p5) => {
     const currentMode = modeRef.current;
-    
-    let c1 = p5.color(230, 80, 15); 
-    let c2 = p5.color(200, 70, 25); 
+    const currentPreset = SOUND_PRESETS[ambientTypeRef.current] || SOUND_PRESETS['off'];
+
+    let c1, c2;
+    if (ambientTypeRef.current === 'off') {
+        c1 = p5.color(230, 80, 15); 
+        c2 = p5.color(200, 70, 25);
+    } else {
+        c1 = p5.color(currentPreset.hue, currentPreset.sat, 15); 
+        c2 = p5.color(currentPreset.hue, currentPreset.sat - 20, 5);
+    }
     setGradient(p5, 0, 0, p5.width, p5.height, c1, c2);
+
+    // CALCOLO CICLO RESPIRO CENTRALIZZATO (Per sincronizzare tutto)
+    const time = p5.millis() / 1000;
+    const cycleDuration = 6.0;
+    const rawSin = Math.sin((time * (Math.PI * 2)) / cycleDuration - Math.PI / 2);
+    const breathCycle = (rawSin + 1) / 2; // Valore da 0.0 a 1.0
 
     if (currentMode === "flow") {
         drawFluidBackground(p5);
     } else if (currentMode === "breathe") {
-        // 1. Sfondo geometrico (NON frastagliato, NON veloce, ma visibile)
-        drawRecursiveFractalBackground(p5);
-        // 2. Mandala (Piccolo e contenuto)
-        drawBreathScene(p5);
+        // Passiamo breathCycle sia allo sfondo che alla scena
+        drawRecursiveFractalBackground(p5, currentPreset, breathCycle);
+        drawBreathScene(p5, breathCycle);
     }
 
     for (let i = ripples.current.length - 1; i >= 0; i--) {
@@ -482,12 +461,14 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, onInt
 
   const mousePressed = (p5) => {
     if (onInteraction) onInteraction(p5.mouseX, p5.mouseY, p5.width, p5.height);
+    
+    // RIPPLE (Unico effetto del click ora)
     ripples.current.push(new Ripple(p5.mouseX, p5.mouseY));
     
-    if (modeRef.current === "breathe") {
-      const flowerDNA = generateString(3, "simple");
-      fractalFlowers.current.push(new FractalFlower(p5.mouseX, p5.mouseY, flowerDNA));
-    } else {
+    // NOTA: Rimossa la logica che faceva pulsare lo sfondo al click
+
+    // FLUID PARTICLES (Solo in Flow)
+    if (modeRef.current !== "breathe") {
       spawnFluidParticles(p5, 5, p5.mouseX, p5.mouseY);
       for(let org of organisms.current) {
         let d = p5.dist(p5.mouseX, p5.mouseY, org.pos.x, org.pos.y);
