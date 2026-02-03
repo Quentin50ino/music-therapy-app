@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
 const http = require('http');
-// const { Server } = require("socket.io"); // NON SERVE PIÙ, PUOI RIMUOVERLO
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const SpotifyWebApi = require('spotify-web-api-node'); 
 const cors = require('cors');
@@ -9,13 +8,14 @@ const axios = require('axios');
 
 const app = express();
 
-// --- MIDDLEWARE FONDAMENTALI ---
+// --- MIDDLEWARE ---
 app.use(cors()); 
-app.use(express.json()); // <--- IMPORTANTISSIMO: Senza questo req.body è vuoto!
+app.use(express.json()); 
 
 const server = http.createServer(app);
 
-// In sviluppo permettiamo tutto, in produzione specificheremo il dominio
+// In development we allow everything from localhost:3000
+// In production, set CLIENT_URL in environment variables (client side .env file)
 app.use(cors({
   origin: process.env.CLIENT_URL || "http://localhost:3000", 
   credentials: true
@@ -41,15 +41,15 @@ const refreshSpotifyToken = async () => {
   try {
     const data = await spotifyApi.clientCredentialsGrant();
     spotifyToken = data.body['access_token'];
-    console.log('✅ Token Spotify aggiornato');
+    console.log('Token Spotify aggiornato');
   } catch (err) {
-    console.error('❌ Errore Token Spotify:', err.message);
+    console.error('Errore Token Spotify:', err.message);
   }
 };
 refreshSpotifyToken();
 setInterval(refreshSpotifyToken, 1000 * 60 * 50);
 
-// --- FUNZIONE RICERCA SPOTIFY ---
+// --- SPOTIFY SEARCH FUNCTION ---
 async function searchSpotifyTrack(query) {
     if (!spotifyToken) throw new Error("Token non pronto");
 
@@ -59,7 +59,6 @@ async function searchSpotifyTrack(query) {
         limit: '1'
     });
 
-    // URL Standard
     const url = `https://api.spotify.com/v1/search?${params.toString()}`;
     
     const response = await fetch(url, {
@@ -76,12 +75,12 @@ async function getAudioFeaturesExternal(artist, trackName, geminiMood) {
     const apiKey = process.env.LASTFM_API_KEY;
 
     if (!apiKey) {
-        console.warn("⚠️ Manca LASTFM_API_KEY. Uso fallback.");
+        console.warn("Manca LASTFM_API_KEY. Uso fallback.");
         return createFallbackData(geminiMood);
     }
 
     try {
-        console.log(`⏳ [Last.fm] Analizzo: ${trackName} - ${artist}`);
+        console.log(`[Last.fm] Analizzo: ${trackName} - ${artist}`);
         const url = `http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(trackName)}&format=json`;
 
         const response = await axios.get(url, { timeout: 3000 });
@@ -115,7 +114,7 @@ async function getAudioFeaturesExternal(artist, trackName, geminiMood) {
         };
 
     } catch (error) {
-        console.error(`❌ [Last.fm] Errore: ${error.message}`);
+        console.error(`[Last.fm] Errore: ${error.message}`);
         return createFallbackData(geminiMood);
     }
 }
@@ -129,21 +128,19 @@ function createFallbackData(geminiMood) {
     };
 }
 
-// ==========================================================
-// --- API ENDPOINT (Sostituisce Socket.io) ---
-// ==========================================================
+
+// --- API ENDPOINT ---
 app.post('/chat', async (req, res) => {
     try {
-        // 1. Leggiamo il messaggio dal BODY della richiesta
         const userText = req.body.message;
-        console.log("📩 Messaggio ricevuto:", userText);
+        console.log("Messaggio ricevuto:", userText);
 
         if (!userText) {
             return res.status(400).json({ error: "Messaggio vuoto" });
         }
 
-        // --- 2. GEMINI ---
-        const prompt = `
+        //Old promt (commented because was too simple and didn't give good results)
+        /*const prompt = `
             Sei un DJ terapeuta. Analizza: "${userText}".
             Rispondi SOLO JSON valido.
             {
@@ -151,19 +148,67 @@ app.post('/chat', async (req, res) => {
               "searchQuery": "frase ricerca spotify (es: 'sad piano melancholic')",
               "mood": { "valence": 0.5, "energy": 0.5 }
             }
-        `;
+        `;*/
+
+        const prompt = `You are the "DJ Therapist," an advanced AI specialized in Musicotherapy, Sentiment Analysis, and Emotional Regulation. Your goal is to analyze the user's input to understand their emotional state and provide an immediate therapeutic response combined with a precise musical prescription.
+
+            ### INPUT:
+            "${userText}"
+
+            ### INSTRUCTIONS:
+            1.  **Analyze Sentiment:** Deeply analyze the subtext, tone, and explicit emotion of the user's input.
+            2.  **Formulate Reply:** Create a brief, empathetic, and validating response. Do not offer solutions; offer understanding.
+            3.  **Curate Music:** Generate a specific Spotify search query optimized to resonate with the user's current state (Iso-principle) or gently guide them toward a better state. Use keywords regarding genre, instrument, and vibe.
+            4.  **Map Mood:** Quantify the emotion using the Russell Circumplex Model of Affect (Valence vs. Energy).
+
+            ### JSON OUTPUT FORMAT SPECIFICATIONS:
+            You must respond with ONLY valid, raw JSON. Do not include markdown formatting (like \`\`\`json), explanations, or extra text.
+
+            The JSON object must have these exact keys:
+            - "reply": (String) A short, warm, human-like response (max 20 words). It must feel like a hug or a nod of understanding.
+            - "searchQuery": (String) A string of English keywords optimized for Spotify search. Format: "[Genre] [Vibe] [Instrument/Tempo]". Example: "Ambient piano melancholic rain" or "Upbeat funk energetic brass".
+            - "mood": (Object)
+                - "valence": (Float between 0.0 and 1.0) 0.0 is negative/unpleasant (sad, angry), 1.0 is positive/pleasant (happy, calm).
+                - "energy": (Float between 0.0 and 1.0) 0.0 is low arousal (sleepy, calm), 1.0 is high arousal (excited, angry).
+
+            ### EXAMPLES:
+
+            **User:** "I feel completely overwhelmed by work, I can't breathe."
+            **Output:**
+            {
+            "reply": "It sounds incredibly heavy right now. Let's take a moment to slow everything down.",
+            "searchQuery": "Ambient drone binaural 432hz calm anxiety relief",
+            "mood": { "valence": 0.2, "energy": 0.8 }
+            }
+
+            **User:** "I finally got that promotion! I'm on top of the world!"
+            **Output:**
+            {
+            "reply": "That is fantastic news! Let's celebrate that energy and keep the vibes high.",
+            "searchQuery": "Nu-disco funk upbeat celebration happy",
+            "mood": { "valence": 0.9, "energy": 0.9 }
+            }
+
+            **User:** "I feel empty and lonely today."
+            **Output:**
+            {
+            "reply": "I hear you. It's okay to sit with these feelings. Here is some company.",
+            "searchQuery": "Neo-classical cello slow melancholic solitude",
+            "mood": { "valence": 0.1, "energy": 0.2 }
+            }
+
+            ### YOUR RESPONSE:
+            `;
 
         let result = await geminiModel.generateContent(prompt);
         let textResponse = await result.response.text();
         
-        // Pulizia JSON
         textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
         if(textResponse.indexOf('{') > 0) textResponse = textResponse.substring(textResponse.indexOf('{'));
         if(textResponse.lastIndexOf('}') < textResponse.length - 1) textResponse = textResponse.substring(0, textResponse.lastIndexOf('}') + 1);
         
         const aiData = JSON.parse(textResponse);
 
-        // --- 3. SPOTIFY & LAST.FM ---
         let trackInfo = null;
         let audioAnalysis = null;
         
@@ -187,8 +232,6 @@ app.post('/chat', async (req, res) => {
             console.error("Errore Musica:", err.message);
         }
 
-        // --- 4. RISPOSTA HTTP ---
-        // Invece di socket.emit, usiamo res.json
         res.json({
             reply: aiData.reply,
             track: trackInfo,
@@ -196,11 +239,28 @@ app.post('/chat', async (req, res) => {
         });
 
     } catch (error) {
-        console.error("❌ Errore Server:", error);
-        res.status(500).json({ error: "Errore interno del server" });
+        console.error("Errore API Gemini:", error);
+
+        // ERROR 429 (RATE LIMIT)
+        if (error.status === 429 || error.message.includes('Too Many Requests')) {
+            console.log("⚠️ Quota superata. Invio risposta di fallback.");
+            
+            return res.json({
+            reply: "Sto riflettendo troppo intensamente e ho bisogno di una pausa. Riprova tra 30 secondi.",
+            searchQuery: "calm patience waiting music",
+            mood: { valence: 0.5, energy: 0.3 }
+            });
+        }
+
+        // Other errors (different from rate limit)
+        res.status(500).json({ 
+            reply: "Mi dispiace, si è verificato un errore tecnico. Riprova più tardi.",
+            searchQuery: "error glitch noise",
+            mood: { valence: 0.5, energy: 0.5 }
+        });
     }
 });
 
 server.listen(3001, () => {
-  console.log('🚀 Server API pronto su http://localhost:3001');
+  console.log('Server API listening on http://localhost:3001');
 });
