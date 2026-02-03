@@ -1,64 +1,55 @@
-# DJ Therapist AI: A Generative Digital Therapeutics Platform
+# DJ Therapist AI: Interactive Music & Visual Therapy
 
-## 1. Abstract
-**DJ Therapist AI** is a web-based **Digital Therapeutics (DTx)** application designed to support emotional regulation and mental well-being through the convergence of Artificial Intelligence, Music Therapy, and Generative Art.
+### 1-line description
+A holistic web application merging generative AI, music therapy, and interactive generative art to promote mental well-being and emotional regulation.
 
-The system utilizes a Large Language Model (**Google Gemini**) to analyze the user's sentiment via a chat interface, extracting psychometric parameters (*Valence* and *Energy*). These parameters drive a recommendation engine that retrieves mood-congruent music directly from **Spotify**.
+### Description
+**DJ Therapist AI** is a digital safe space designed for users seeking relaxation, emotional venting, or guidance. The user experience is divided into three interconnected, neuro-aesthetics-driven components:
 
-Simultaneously, the application generates a real-time, reactive visual environment using **P5.js**, creating a biofeedback loop between the audio stimuli and the user's visual perception. The platform integrates specific therapeutic modules developed via **Web Audio API** and particle systems, including anxiety management tools (text-to-ash visualization), guided breathing exercises for cardiac coherence, and a procedural ambient noise synthesizer (Brownian, Pink, White noise, and 432Hz tones) with spatial interaction.
+1.  **AI Counseling & Music:** An empathic chatbot (powered by **Google Gemini**) that dialogues with the user, analyzes text sentiment, and suggests **Spotify** tracks tuned to the detected mood, creating a personalized soundscape.
+2.  **Evolutionary Visualizer:** A generative background built in **p5.js** that reacts to different modes. In "Flow Mode," fluid particles evolve and move organically, simulating a calming deep-ocean environment.
+3.  **Therapeutic Rituals:**
+    * **Breathe Mode:** A guided interface for deep breathing (coherence technique). During inspiration, chaotic particles vanish to reveal giant concentric fractal mandalas (L-Systems) that expand to fill the screen, pulsing in sync with the breath cycle to reduce cognitive load.
+    * **Burn Thoughts:** A digital catharsis ritual. The user types a negative thought; after 3 seconds of focus, the text visually ignites. We implemented a realistic combustion system (via "Additive Layering") and procedural audio feedback (rumble and crackle) generated in real-time without external audio files.
 
-This project demonstrates how creative coding and AI can be integrated to create accessible, immersive, and non-invasive mental health support tools.
+### Challenges, accomplishments, and lessons learned
 
----
+* **Challenges:** The biggest technical challenge was managing **advanced graphics rendering** within React. Specifically, the "Burn Thoughts" feature struggled with converting text to particle coordinates due to asynchronous font loading. We solved this by implementing a **"Pixel Scanning"** technique on an invisible graphics buffer, making the effect robust across all devices. **Deployment** also required effort to correctly configure CORS policies and environment variables between the client (Firebase) and the server (Render).
+* **Accomplishments:** We are proud of the **Particle Engine**. We achieved a "liquid fire" effect using *additive blending* and multiple color layers, resulting in a realistic look without heavy shaders. Another major milestone was the **Audio Engine**: instead of using static MP3 files, we utilized the **Web Audio API** to synthesize Brown Noise and dynamic filters in real-time, perfectly synchronized with the visual animations.
+* **Lessons learned:** We learned the importance of decoupling frontend/backend architecture for scalability and how to manage security in production. Furthermore, we deepened our understanding of the math behind Fractal systems (L-Systems) and how recursive geometric patterns can positively influence a user's cognitive state.
 
-## 2. Project Architecture
+### Technology
+* **Frontend:** React.js, p5.js (Creative Coding), CSS3.
+* **Audio:** Web Audio API (Real-time procedural synthesis).
+* **Backend:** Node.js, Express.js.
+* **AI & APIs:** Google Gemini API (NLP & Sentiment Analysis), Spotify API (Music Recommendation).
+* **Deployment:** Firebase Hosting (Frontend), Render (Backend).
+* **Concepts:** L-Systems (Fractals), Particle Systems, Additive Blending, Pixel Scanning.
 
-The project is built upon a modern **Client-Server** architecture:
+### Students
+* **Alberto Bollino:** 
+* **Wilma Bertilsson:** 
+* **Matteo Orlandin:** 
 
-* **Frontend:** React.js + P5.js (Graphic Visualization and User Interface).
-* **Backend:** Node.js + Express (API Management and Business Logic).
-* **Audio Engine:** Web Audio API (Browser-native) for ambient sound synthesis.
-* **AI & Data:**
-    * *Google Gemini API:* Semantic analysis and sentiment analysis.
-    * *Spotify Web API:* Music track retrieval and metadata.
+### Links
+* **GitHub Repo:** [Link to Github Repository](https://github.com/Quentin50ino/music-therapy-app)]
+* **Web App Demo:** [Direct link to the deployed application](https://music-therapy-app-246ba.web.app/)]
+* **Video Demo:** [INSERT VIDEO LINK HERE]
+* **Presentation:** [INSERT SLIDES LINK HERE]
 
----
+### 1 thumbnail image related to the projects
+![Project Thumbnail](assets/thumbnail.jpg)
+*(Format: 1024x768. Representative image, e.g., Flow Mode)*
 
-## 3. Key Features
+### Pictures
+![Flow Mode Chat](assets/screenshot_flow.jpg)
+*Flow Mode featuring the AI Chat interface and fluid particles.*
 
-### AI Emotional Agent
-A therapeutic chatbot based on a Large Language Model (LLM) analyzes user input. Beyond providing empathetic responses, it extracts emotional coordinates (`valence`, `energy`) that dynamically influence the entire graphical and musical environment.
+![Breathe Mode](assets/screenshot_breathe.jpg)
+*Breathe Mode with expanding concentric fractals.*
 
-### Generative Visualization (P5.js)
-A fluid particle system ("Flow Field") reacts to music and user input in real-time.
-* **Silk Effect:** Persistent trails create a relaxing, fluid visual environment.
-* **Reactivity:** Particle colors and speed shift according to the track's energy and the detected mood.
+![Burn Ritual](assets/screenshot_burn.jpg)
+*The "Burn Thoughts" ritual with the realistic particle fire effect.*
 
-### Therapeutic Modules (DTx Tools)
-The application includes three specific tools activatable via the toolbar:
-
-1.  **Guided Breathing (Cardiac Coherence):**
-    A visualizer featuring concentric circles guides the user through rhythmic breathing patterns (Inhale/Exhale) to reduce physiological stress.
-
-2.  **Burning Thoughts (Digital Catharsis):**
-    An interactive module allowing the user to type a negative thought. Using a *text-to-points* algorithm, the text is visualized as burning embers and subsequently dissolved into smoke particles that drift upwards, simulating a liberating combustion process.
-
-3.  **Ambient Synthesizer (Spatial Audio):**
-    An integrated procedural noise generator (Brownian, Pink, White, 432Hz).
-    * **XY Interaction:** Moving the mouse along the X-axis modifies the filter (sound color/frequency), while the Y-axis controls the volume. This allows the user to sculpt their own auditory focus environment.
-
----
-
-## 4. Installation and Setup
-
-### Prerequisites
-* Node.js installed (v14 or higher).
-* Developer accounts for Spotify and Google Gemini.
-
-### Environment Variables Configuration
-Create a `.env` file in the server root directory with the following keys:
-
-```env
-GEMINI_API_KEY=your_google_key
-SPOTIFY_CLIENT_ID=your_spotify_client_id
-SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
+### Video
+[INSERT VIDEO LINK OR EMBED HERE]
