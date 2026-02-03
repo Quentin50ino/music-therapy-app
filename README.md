@@ -1,4 +1,4 @@
-# DJ Therapist AI: A Generative Digital Therapeutics Platform
+[# DJ Therapist AI: A Generative Digital Therapeutics Platform
 
 ## 1. Abstract
 **DJ Therapist AI** is a web-based **Digital Therapeutics (DTx)** application designed to support emotional regulation and mental well-being through the convergence of Artificial Intelligence, Music Therapy, and Generative Art.
@@ -62,3 +62,4 @@ Create a `.env` file in the server root directory with the following keys:
 GEMINI_API_KEY=your_google_key
 SPOTIFY_CLIENT_ID=your_spotify_client_id
 SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
+](https://github.com/Quentin50ino/music-therapy-app)
