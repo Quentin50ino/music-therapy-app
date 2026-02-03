@@ -121,7 +121,7 @@ const App = () => {
     setAmbientType('off');
   };
 
-  const playAmbient = (type) => {
+const playAmbient = (type) => {
     const ctx = initAudioContext();
 
     if (type === ambientType) {
@@ -131,6 +131,7 @@ const App = () => {
 
     if (sourceNodeRef.current) sourceNodeRef.current.stop();
 
+    // Setup Gain Master
     if (!gainNodeRef.current) {
       const gain = ctx.createGain();
       gain.gain.value = 0.5;
@@ -138,52 +139,119 @@ const App = () => {
       gainNodeRef.current = gain;
     }
 
+    // Reset Filtri precedenti se esistono
     if (!filterNodeRef.current) {
-      const filter = ctx.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.value = 1000; 
-      filter.connect(gainNodeRef.current);
-      filterNodeRef.current = filter;
+        const filter = ctx.createBiquadFilter();
+        filter.connect(gainNodeRef.current);
+        filterNodeRef.current = filter;
     }
 
-    const bufferSize = 2 * ctx.sampleRate;
-    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-    const output = buffer.getChannelData(0);
-    let source;
-
+    // Configurazione specifica per tipo
     if (type === '432') {
-      source = ctx.createOscillator();
+      // Tono Puro 432Hz
+      const source = ctx.createOscillator();
       source.type = 'sine';
-      source.frequency.value = 432; 
-      filterNodeRef.current.frequency.value = 5000;
-      source.connect(gainNodeRef.current);
+      source.frequency.value = 432;
+      filterNodeRef.current.type = 'allpass'; // Nessun filtro
+      source.connect(filterNodeRef.current);
+      source.start();
+      sourceNodeRef.current = source;
+
+    } else if (type === 'binaural') {
+      // BINAURAL THETA (6Hz Difference -> Meditazione)
+      // Serve un setup stereo: Canale Sx e Canale Dx separati
+      const merger = ctx.createChannelMerger(2);
+      
+      const oscL = ctx.createOscillator();
+      oscL.type = 'sine';
+      oscL.frequency.value = 200; // Base frequency
+      
+      const oscR = ctx.createOscillator();
+      oscR.type = 'sine';
+      oscR.frequency.value = 206; // 200 + 6Hz (Theta)
+
+      const gainL = ctx.createGain();
+      gainL.gain.value = 0.5;
+      const gainR = ctx.createGain();
+      gainR.gain.value = 0.5;
+
+      // Pan Left
+      const pannerL = ctx.createStereoPanner();
+      pannerL.pan.value = -1;
+      
+      // Pan Right
+      const pannerR = ctx.createStereoPanner();
+      pannerR.pan.value = 1;
+
+      oscL.connect(pannerL).connect(gainL).connect(merger, 0, 0);
+      oscR.connect(pannerR).connect(gainR).connect(merger, 0, 1);
+
+      merger.connect(filterNodeRef.current);
+      filterNodeRef.current.type = 'lowpass';
+      filterNodeRef.current.frequency.value = 1000; // Soften
+
+      oscL.start();
+      oscR.start();
+      
+      // Salviamo oscL come riferimento per lo stop (dovremmo fermarli entrambi ma per semplicità...)
+      // Hack veloce: colleghiamo una funzione di stop personalizzata
+      sourceNodeRef.current = { stop: () => { oscL.stop(); oscR.stop(); } };
+
     } else {
+      // NOISE GENERATOR (Brown, Pink, Green)
+      const bufferSize = 2 * ctx.sampleRate;
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const output = buffer.getChannelData(0);
       let lastOut = 0;
+
       for (let i = 0; i < bufferSize; i++) {
         const white = Math.random() * 2 - 1;
-        if (type === 'white') {
-          output[i] = white * 0.5;
-        } else if (type === 'pink') {
-          const b0 = 0.99886 * lastOut + white * 0.0555179;
-          const b1 = 0.99332 * lastOut + white * 0.0750759;
-          const b2 = 0.96900 * lastOut + white * 0.1538520;
-          output[i] = (b0 + b1 + b2 + white * 0.5362) * 0.11;
-          lastOut = output[i]; 
+
+        if (type === 'green') {
+           // Green Noise è Pink noise ma filtrato dopo. 
+           // Qui generiamo Pink base e lo filtriamo col BiquadFilter sotto.
+           const b0 = 0.99886 * lastOut + white * 0.0555179;
+           const b1 = 0.99332 * lastOut + white * 0.0750759;
+           const b2 = 0.96900 * lastOut + white * 0.1538520;
+           output[i] = (b0 + b1 + b2 + white * 0.5362) * 0.11;
+           lastOut = output[i];
         } else if (type === 'brown') {
           output[i] = (lastOut + (0.02 * white)) / 1.02;
           lastOut = output[i];
           output[i] *= 3.5; 
+        } else if (type === 'pink') {
+             const b0 = 0.99886 * lastOut + white * 0.0555179;
+             const b1 = 0.99332 * lastOut + white * 0.0750759;
+             const b2 = 0.96900 * lastOut + white * 0.1538520;
+             output[i] = (b0 + b1 + b2 + white * 0.5362) * 0.11;
+             lastOut = output[i];
         }
       }
-      source = ctx.createBufferSource();
+
+      const source = ctx.createBufferSource();
       source.buffer = buffer;
       source.loop = true;
       source.connect(filterNodeRef.current);
-      filterNodeRef.current.frequency.value = 800; 
+
+      // IMPOSTAZIONI FILTRO PER TIPO
+      if (type === 'green') {
+        // GREEN NOISE: Bandpass concentrato sulle medie frequenze (Natura)
+        filterNodeRef.current.type = 'bandpass';
+        filterNodeRef.current.frequency.value = 500; // Centro frequenze natura
+        filterNodeRef.current.Q.value = 0.5; // Ampiezza banda larga
+      } else if (type === 'brown') {
+        filterNodeRef.current.type = 'lowpass';
+        filterNodeRef.current.frequency.value = 800;
+      } else {
+        filterNodeRef.current.type = 'lowpass'; // Pink
+        filterNodeRef.current.frequency.value = 2000;
+      }
+
+      source.start();
+      sourceNodeRef.current = source;
     }
 
-    source.start();
-    sourceNodeRef.current = source;
+    // Fade In
     gainNodeRef.current.gain.setValueAtTime(0, ctx.currentTime);
     gainNodeRef.current.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 1);
     setAmbientType(type);
@@ -301,6 +369,7 @@ const App = () => {
           moodData={moodRef.current}
           mode={mode}
           burnSignal={burnSignal}
+          ambientType={ambientType}
           onInteraction={handleVisualInteraction}
         />
       </div>
@@ -322,13 +391,19 @@ const App = () => {
         </div>
         <div className="sound-menu-container">
           <div className={`tool-btn ${ambientType !== 'off' ? 'active' : ''}`} title="Suoni Ambientali">
-            {ambientType === 'off' ? '🌊' : (ambientType === 'brown' ? '🟤' : (ambientType === 'white' ? '⚪' : (ambientType === 'pink' ? '🌸' : '🧘')))}
+            {/* Icona dinamica */}
+            {ambientType === 'off' ? '🌊' : 
+            (ambientType === 'brown' ? '🟤' : 
+            (ambientType === 'green' ? '🍃' : 
+            (ambientType === 'binaural' ? '🧠' : 
+            (ambientType === 'pink' ? '🌸' : '🧘'))))}
           </div>
           <div className="sound-dropdown">
             <button className={ambientType === 'off' ? 'active' : ''} onClick={() => playAmbient('off')}>🚫 Muto</button>
-            <button className={ambientType === 'brown' ? 'active' : ''} onClick={() => playAmbient('brown')}>🟤 Marrone</button>
-            <button className={ambientType === 'pink' ? 'active' : ''} onClick={() => playAmbient('pink')}>🌸 Rosa</button>
-            <button className={ambientType === 'white' ? 'active' : ''} onClick={() => playAmbient('white')}>⚪ Bianco</button>
+            <button className={ambientType === 'green' ? 'active' : ''} onClick={() => playAmbient('green')}>🍃 Green (Natura)</button>
+            <button className={ambientType === 'binaural' ? 'active' : ''} onClick={() => playAmbient('binaural')}>🧠 Binaural (Theta)</button>
+            <button className={ambientType === 'brown' ? 'active' : ''} onClick={() => playAmbient('brown')}>🟤 Brown (Profondo)</button>
+            <button className={ambientType === 'pink' ? 'active' : ''} onClick={() => playAmbient('pink')}>🌸 Pink (Pioggia)</button>
             <button className={ambientType === '432' ? 'active' : ''} onClick={() => playAmbient('432')}>🧘 432 Hz</button>
           </div>
         </div>
