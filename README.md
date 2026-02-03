@@ -32,8 +32,8 @@ A holistic web application merging generative AI, music therapy, and interactive
 * **Matteo Orlandin:** 
 
 ### Links
-* **GitHub Repo:** [INSERT GITHUB LINK HERE](https://github.com/Quentin50ino/music-therapy-app)]
-* **Web App Demo:** [\[INSERT FIREBASE LINK HERE, e.g., https://music-therapy-app.web.app](https://music-therapy-app-246ba.web.app/)]
+* **GitHub Repo:** [Link to Github Repository](https://github.com/Quentin50ino/music-therapy-app)]
+* **Web App Demo:** [Direct link to the deployed application](https://music-therapy-app-246ba.web.app/)]
 * **Video Demo:** [INSERT VIDEO LINK HERE]
 * **Presentation:** [INSERT SLIDES LINK HERE]
 
