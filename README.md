@@ -6,34 +6,53 @@ A holistic web application merging generative AI, music therapy, and interactive
 ### Description
 **DJ Therapist AI** is a digital safe space designed for users seeking relaxation, emotional venting, or guidance. The user experience is divided into three interconnected, neuro-aesthetics-driven components:
 
-1.  **AI Counseling & Music:** An empathic chatbot (powered by **Google Gemini**) that dialogues with the user, analyzes text sentiment, and suggests **Spotify** tracks tuned to the detected mood, creating a personalized soundscape.
-2.  **Evolutionary Visualizer:** A generative background built in **p5.js** that reacts to different modes. In "Flow Mode," fluid particles evolve and move organically, simulating a calming deep-ocean environment.
+1.  **AI Counseling & Music Discovery:** An empathic chatbot (powered by **Google Gemini**) dialogues with the user, analyzes text sentiment, and suggests **Spotify** tracks tuned to the detected mood. We utilize **Last.fm** APIs to enrich track metadata and retrieve musical tags, ensuring a deep understanding of the song's context.
+
+2.  **Evolutionary Visualizer (The Primordial Soup):** A generative background built in **p5.js** that simulates a "Primordial Soup."
+    * **Scientific Inspiration:** Inspired by the **Oparin-Haldane hypothesis** (1924) regarding the origin of life, we simulated a prebiotic ocean where simple organic compounds evolve into complex structures through **Abiogenesis**. The visualizer isn't just a video loop, but an agent-based simulation.
+    * **Particle Lifecycle:** Luminous particles are born with specific energy levels and move organically using fluid dynamics (Perlin Noise). They follow a biological cycle: they age, lose energy, and eventually "die" to make room for new life.
+    * **Harmonic Fusion:** When two fertile particles collide, they merge (simulating chemical bonding). This event triggers a synthesized sound using the Web Audio API. **Crucially, the system analyzes the Musical Key of the playing song (e.g., C# Minor) and forces the particles to "sing" only notes from that specific scale.** This creates a generative melody that is always mathematically consonant with the user's music.
+
 3.  **Therapeutic Rituals:**
-    * **Breathe Mode:** A guided interface for deep breathing (coherence technique). During inspiration, chaotic particles vanish to reveal giant concentric fractal mandalas (L-Systems) that expand to fill the screen, pulsing in sync with the breath cycle to reduce cognitive load.
-    * **Burn Thoughts:** A digital catharsis ritual. The user types a negative thought; after 3 seconds of focus, the text visually ignites. We implemented a realistic combustion system (via "Additive Layering") and procedural audio feedback (rumble and crackle) generated in real-time without external audio files.
+    * **Breathe Mode (L-Systems):** A guided interface for deep breathing (coherence technique). During inspiration, chaotic particles vanish to reveal giant concentric fractal mandalas. These are generated using **L-Systems (Lindenmayer Systems)**, a mathematical formalism introduced by biologist Aristid Lindenmayer in 1968 to model plant growth.
+        * *Implementation:* We defined an **Axiom** (initial string) and a set of **Production Rules** (e.g., `F -> F-[[X]+X]+F`). At every breath cycle, the system recursively rewrites the string, which is then interpreted by a "Turtle Graphics" engine to draw organic, branching structures. This recursive self-similarity is proven to be visually soothing.
+    * **Burn Thoughts:** A digital catharsis ritual. The user types a negative thought; after 3 seconds of focus, the text visually ignites using a "Pixel Scanning" technique and "Additive Layering" for a realistic fire effect.
+
+### Design Philosophy & Neuroscience
+Our primary goal was **Radical Simplicity**. In a therapeutic context, visual complexity can increase cognitive load and anxiety. Therefore:
+
+* **Default Mode Network (DMN):** We designed the interface to minimize "Task-Positive" brain activity (active problem solving) and encourage the activation of the **Default Mode Network**, a brain state associated with wakeful rest, daydreaming, and memory consolidation.
+* **The Sublime & Scale:** By simulating a "World in Creation" (the Primordial Soup) rather than concrete geometric shapes, we aim to induce a sense of vastness ("The Sublime"). Psychologically, feeling "small" relative to a cosmic process helps reduce the perceived weight of personal ego-centric problems, facilitating a "flow state."
 
 ### Challenges, accomplishments, and lessons learned
 
-* **Challenges:** The biggest technical challenge was managing **advanced graphics rendering** within React. Specifically, the "Burn Thoughts" feature struggled with converting text to particle coordinates due to asynchronous font loading. We solved this by implementing a **"Pixel Scanning"** technique on an invisible graphics buffer, making the effect robust across all devices. **Deployment** also required effort to correctly configure CORS policies and environment variables between the client (Firebase) and the server (Render).
-* **Accomplishments:** We are proud of the **Particle Engine**. We achieved a "liquid fire" effect using *additive blending* and multiple color layers, resulting in a realistic look without heavy shaders. Another major milestone was the **Audio Engine**: instead of using static MP3 files, we utilized the **Web Audio API** to synthesize Brown Noise and dynamic filters in real-time, perfectly synchronized with the visual animations.
-* **Lessons learned:** We learned the importance of decoupling frontend/backend architecture for scalability and how to manage security in production. Furthermore, we deepened our understanding of the math behind Fractal systems (L-Systems) and how recursive geometric patterns can positively influence a user's cognitive state.
+* **Challenges:**
+    * **Spotify API Deprecation:** We faced a hurdle when Spotify deprecated their *Audio Features* endpoint. We overcame this by implementing a hybrid fallback system: we first attempt to extract the Key from **Last.fm tags**, and if that fails, we use a deterministic hashing algorithm based on the track title to ensure consistent audio visualization.
+    * **Graphics Performance:** Managing a population of living particles that check for collisions ($O(n^2)$ complexity) while synthesizing audio in real-time required optimizing the p5.js loop and utilizing `useCallback` hooks in React.
+* **Accomplishments:**
+    * **Harmonic Particle Engine:** We successfully built a system where visual art creates music. The particles don't just make random noises; they play "in key." If the song is sad (Minor scale), the particles play melancholic notes; if happy (Major scale), they play bright notes.
+    * **Audio Synthesis:** Instead of static audio files, we used the **Web Audio API** to synthesize everything—from the Brown Noise background (which breathes with an LFO) to the binaural pads generated by particle collisions.
+* **Lessons learned:** We learned how to translate music theory into code and how to decouple complex simulation logic from the React UI layer. We also deepened our understanding of L-Systems and how recursive math can mimic nature to induce calmness.
 
 ### Technology
-* **Frontend:** React.js, p5.js (Creative Coding), CSS3.
-* **Audio:** Web Audio API (Real-time procedural synthesis).
+* **Frontend:** React.js, p5.js (Creative Coding), CSS3 (Glassmorphism UI).
+* **Audio:** Web Audio API (Real-time procedural synthesis, Oscillators, LFOs).
 * **Backend:** Node.js, Express.js.
-* **AI & APIs:** Google Gemini API (NLP & Sentiment Analysis), Spotify API (Music Recommendation).
+* **AI & Data:**
+    * **Google Gemini API:** NLP & Sentiment Analysis.
+    * **Spotify API:** Music Recommendation & Playback.
+    * **Last.fm API:** Metadata enrichment and Musical Key extraction.
 * **Deployment:** Firebase Hosting (Frontend), Render (Backend).
-* **Concepts:** L-Systems (Fractals), Particle Systems, Additive Blending, Pixel Scanning.
+* **Concepts:** L-Systems (Fractals), Agent-based Systems, Additive Blending, Music Theory, Default Mode Network, Oparin-Haldane Hypothesis.
 
 ### Students
-* **Alberto Bollino:** 
-* **Wilma Bertilsson:** 
-* **Matteo Orlandin:** 
+* **Alberto Bollino**
+* **Wilma Bertilsson**
+* **Matteo Orlandin**
 
 ### Links
-* **GitHub Repo:** [Link to Github Repository](https://github.com/Quentin50ino/music-therapy-app)]
-* **Web App Demo:** [Direct link to the deployed application](https://music-therapy-app-246ba.web.app/)]
+* **GitHub Repo:** [Link to Github Repository](https://github.com/Quentin50ino/music-therapy-app)
+* **Web App Demo:** [Direct link to the deployed application](https://music-therapy-app-246ba.web.app/)
 * **Video Demo:** [INSERT VIDEO LINK HERE]
 * **Presentation:** [INSERT SLIDES LINK HERE]
 
@@ -43,10 +62,10 @@ A holistic web application merging generative AI, music therapy, and interactive
 
 ### Pictures
 ![Flow Mode Chat](assets/screenshot_flow.jpg)
-*Flow Mode featuring the AI Chat interface and fluid particles.*
+*Flow Mode featuring the AI Chat interface and the living particle ecosystem.*
 
 ![Breathe Mode](assets/screenshot_breathe.jpg)
-*Breathe Mode with expanding concentric fractals.*
+*Breathe Mode with expanding concentric fractals (L-Systems) synchronized to breath cycles.*
 
 ![Burn Ritual](assets/screenshot_burn.jpg)
 *The "Burn Thoughts" ritual with the realistic particle fire effect.*
