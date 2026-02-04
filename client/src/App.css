@@ -1,3 +1,39 @@
+/* App.css */
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden; /* BLOCCA LO SCROLL DELLA PAGINA INTERA */
+  background-color: #000;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.App {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Animazione Chat */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+
+
+
+
+
+
+
 .visual-background {
   position: absolute;
   top: 0;
@@ -7,6 +43,7 @@
   z-index: -1;
   overflow: hidden;
 }
+
 
 /* App.css */
 body { margin: 0; overflow: hidden; background: black; font-family: 'Segoe UI', sans-serif; }
