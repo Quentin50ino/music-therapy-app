@@ -8,12 +8,12 @@ A holistic web application merging Generative AI, music therapy, and interactive
 
 1.  **AI Counseling & The "Musicologist" Agent:**
     * An empathic chatbot (powered by **Google Gemini 2.5 Flash**) acts as a "DJ Therapist," analyzing the user's sentiment to offer support and curate specific musical suggestions (ISO Principle).
-    * **Innovation:** Unlike traditional apps that rely on deprecated audio analysis APIs, Serenify employs a secondary AI Agent (The **"AI Musicologist"**) that leverages Gemini's vast knowledge base to accurately retrieve technical metadata (**Musical Key, BPM, and Mood**) for the selected track.
+    * **Innovation:** Serenify employs a secondary AI Agent (The **"AI Musicologist"**) that leverages Gemini's vast knowledge base to accurately retrieve technical metadata (**Musical Key, BPM, and Mood**) for the selected track.
 
 2.  **Evolutionary Visualizer (The Living Canvas):**
     * A generative background built in **p5.js** simulating a "Primordial Soup" of luminous organic particles.
-    * **Harmonic Synchronization:** The system reads the **Musical Key** (e.g., C# Minor) identified by the AI and forces particle collisions to synthesize sounds only within that specific scale, ensuring mathematical consonance with the playing track.
-    * **Rhythmic Synchronization (New):** The simulation physics is driven by the song's **BPM** (Beats Per Minute). The Tempo controls the particles' velocity, turbulence, and pulsation rate. A slow ballad creates a calm, floating ecosystem; an energetic track accelerates the fluid dynamics, making the visualizer "dance" to the beat.
+    * **Harmonic Synchronization:** The system reads the **Musical Key** (e.g., C# Minor) identified by the AI agent and forces particle collisions to synthesize sounds only within that specific scale, ensuring mathematical consonance with the playing track.
+    * **Rhythmic Synchronization:** The simulation physics is driven by the song's **BPM** (Beats Per Minute). The Tempo controls the particles' velocity, turbulence, and pulsation rate. A slow ballad creates a calm, floating ecosystem; an energetic track accelerates the fluid dynamics, making the visualizer "dance" to the beat.
 
 3.  **Therapeutic Rituals:**
     * **Breathe Mode (L-Systems):** A guided deep-breathing interface. Chaos vanishes to reveal expanding fractal mandalas generated via **Lindenmayer Systems** (recursive mathematical structures), synchronized with the user's breath cycle.
@@ -37,7 +37,7 @@ Our primary goal was **Radical Simplicity** and **Flow State**.
 
 * **Lessons learned:**
     * We learned that LLMs can replace traditional database APIs for static knowledge (like song keys).
-    * We deepened our understanding of **p5.js** optimization, managing hundreds of interactive particles reacting to global state changes (BPM/Key) in real-time.
+    * We specialize our understanding of **p5.js** optimization, managing hundreds of interactive particles reacting to global state changes (BPM/Key) in real-time.
 
 ### Technology
 * **Frontend:** React.js, p5.js, CSS3.
