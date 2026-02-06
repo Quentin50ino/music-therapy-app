@@ -7,7 +7,7 @@ A holistic web application merging Generative AI, music therapy, and interactive
 **Serenify** is a digital sanctuary designed for users seeking relaxation, emotional regulation, or guidance. The experience orchestrates three interconnected, neuro-aesthetics-driven components:
 
 1.  **AI Counseling & The "Musicologist" Agent:**
-    * An empathic chatbot (powered by **Google Gemini 1.5 Flash**) acts as a "DJ Therapist," analyzing the user's sentiment to offer support and curate specific musical suggestions (ISO Principle).
+    * An empathic chatbot (powered by **Google Gemini 2.5 Flash**) acts as a "DJ Therapist," analyzing the user's sentiment to offer support and curate specific musical suggestions (ISO Principle).
     * **Innovation:** Unlike traditional apps that rely on deprecated audio analysis APIs, Serenify employs a secondary AI Agent (The **"AI Musicologist"**) that leverages Gemini's vast knowledge base to accurately retrieve technical metadata (**Musical Key, BPM, and Mood**) for the selected track.
 
 2.  **Evolutionary Visualizer (The Living Canvas):**
@@ -40,7 +40,7 @@ Our primary goal was **Radical Simplicity** and **Flow State**.
     * We deepened our understanding of **p5.js** optimization, managing hundreds of interactive particles reacting to global state changes (BPM/Key) in real-time.
 
 ### Technology
-* **Frontend:** React.js, p5.js (Creative Coding), CSS3 (Glassmorphism UI).
+* **Frontend:** React.js, p5.js, CSS3.
 * **Backend:** Node.js, Express.js.
 * **AI & Data:**
     * **Google Gemini 1.5 Flash:** NLP, Sentiment Analysis, and Musicological Data Extraction (Key/BPM).
