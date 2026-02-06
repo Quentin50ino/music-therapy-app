@@ -39,7 +39,7 @@ export const drawBreathScene = (p5, breathCycle, preset, lSystemString) => {
     drawFractalRing(p5, lSystemString, 6, mainLen, mainAngle, hue3, preset.sat, 0.8);
     p5.pop();
     
-    // --- TESTO GUIDA (ISPIRA / ESPIRA) ---
+    // --- TESTO GUIDA ---
     p5.drawingContext.shadowBlur = 20;
     p5.drawingContext.shadowColor = 'rgba(255,255,255,0.5)';
     p5.fill(255);
@@ -47,10 +47,9 @@ export const drawBreathScene = (p5, breathCycle, preset, lSystemString) => {
     p5.textAlign(p5.CENTER, p5.CENTER);
     p5.textSize(18);
     
-    const textContent = breathCycle > 0.5 ? "ESPIRA" : "ISPIRA";
+    const textContent = breathCycle > 0.5 ? "EXHALE" : "INHALE";
     p5.text(textContent, 0, 0);
     
-    // Reset ombra
     p5.drawingContext.shadowBlur = 0;
     
     p5.pop();

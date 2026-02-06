@@ -35,21 +35,21 @@ const BurnModal = ({ onConfirm, onCancel }) => {
   return (
     <div style={styles.overlay}>
       <div style={styles.content}>
-        <h2 style={{color: '#ff6432', margin: 0, fontSize: '1.5rem'}}>Brucia un pensiero</h2>
+        <h2 style={{color: '#ff6432', margin: 0, fontSize: '1.5rem'}}>What do you want to burn?</h2>
         <input 
           style={styles.input} 
           type="text" 
-          placeholder="Cosa vuoi lasciar andare?" 
+          placeholder="What do you want to burn?" 
           value={inputValue} 
           onChange={(e) => setInputValue(e.target.value)} 
           autoFocus 
         />
         <div style={{display: 'flex', gap: '15px', justifyContent: 'center'}}>
-          <button style={styles.btnConfirm} onClick={() => onConfirm(inputValue)}>
-            BRUCIA <FaFire />
-          </button>
           <button style={styles.btnCancel} onClick={onCancel}>
-            Annulla
+            cancel
+          </button>
+          <button style={styles.btnConfirm} onClick={() => onConfirm(inputValue)}>
+            BURN <FaFire />
           </button>
         </div>
       </div>

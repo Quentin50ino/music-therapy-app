@@ -5,7 +5,6 @@ const ChatWidget = ({ messages, isLoading, onSend, onClose }) => {
   const [inputText, setInputText] = useState('');
   const chatEndRef = useRef(null);
 
-  // Auto-scroll all'ultimo messaggio
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -70,7 +69,7 @@ const ChatWidget = ({ messages, isLoading, onSend, onClose }) => {
       <div style={styles.header}>
         <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
           <div style={{width: 10, height: 10, background: '#00ff88', borderRadius: '50%', boxShadow: '0 0 8px #00ff88'}}></div>
-          <span style={{fontWeight: 'bold', color: 'white'}}>AI Therapist</span>
+          <span style={{fontWeight: 'bold', color: 'white'}}>Serenify Therapist</span>
         </div>
         <button onClick={onClose} style={{background: 'transparent', border: 'none', color: '#aaa', cursor: 'pointer', fontSize: '1.2rem'}}>
           <FaTimes />

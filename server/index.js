@@ -5,11 +5,9 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const SpotifyWebApi = require('spotify-web-api-node'); 
 const cors = require('cors');
 const axios = require('axios'); 
-const crypto = require('crypto'); // Per l'hashing deterministico
 
 const app = express();
 
-// --- MIDDLEWARE ---
 app.use(cors({
   origin: process.env.CLIENT_URL || "http://localhost:3000", 
   credentials: true
@@ -18,16 +16,9 @@ app.use(express.json());
 
 const server = http.createServer(app);
 
-// --- GEMINI SETUP ---
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-let geminiModel;
-try {
-    geminiModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-} catch (e) {
-    geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Fallback a 1.5 se 2.5 non esiste
-}
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
 
-// --- SPOTIFY TOKEN SETUP ---
 const spotifyApi = new SpotifyWebApi({
   clientId: process.env.SPOTIFY_CLIENT_ID,
   clientSecret: process.env.SPOTIFY_CLIENT_SECRET
@@ -38,177 +29,174 @@ const refreshSpotifyToken = async () => {
   try {
     const data = await spotifyApi.clientCredentialsGrant();
     spotifyToken = data.body['access_token'];
-    console.log('Token Spotify aggiornato');
+    console.log('Spotify Token updated');
   } catch (err) {
-    console.error('Errore Token Spotify:', err.message);
+    console.error('Spotify Token Error:', err.message);
   }
 };
 refreshSpotifyToken();
 setInterval(refreshSpotifyToken, 1000 * 60 * 50);
 
-// --- TEORIA MUSICALE ---
-const PITCH_CLASSES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-const MODES = ['Major', 'Minor'];
-
-// --- FUNZIONE DETERMINISTICA PER LA CHIAVE ---
-// Se non abbiamo dati reali, usiamo l'hash del titolo per dare una chiave "fissa" per quella canzone.
-function getDeterministicKey(artist, track) {
-    const input = `${artist}-${track}`.toLowerCase();
-    const hash = crypto.createHash('md5').update(input).digest('hex');
-    
-    // Prendiamo i primi byte dell'hash per scegliere nota e modo
-    const decimal = parseInt(hash.substring(0, 2), 16);
-    
-    const noteIndex = decimal % 12;
-    const modeIndex = (decimal % 24) >= 12 ? 1 : 0; // 50% probabilità
-
-    return `${PITCH_CLASSES[noteIndex]} ${MODES[modeIndex]}`;
+function cleanGeminiJSON(text) {
+    let clean = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const firstBrace = clean.indexOf('{');
+    const lastBrace = clean.lastIndexOf('}');
+    if (firstBrace >= 0 && lastBrace >= 0) {
+        clean = clean.substring(firstBrace, lastBrace + 1);
+    }
+    return clean;
 }
 
-// --- SPOTIFY SEARCH ---
 async function searchSpotifyTrack(query) {
-    if (!spotifyToken) throw new Error("Token non pronto");
-
-    // NOTA: Endpoint di ricerca standard
+    if (!spotifyToken) throw new Error("Spotify Token not ready");
     const response = await axios.get('https://api.spotify.com/v1/search', {
         headers: { 'Authorization': `Bearer ${spotifyToken}` },
         params: { q: query, type: 'track', limit: 1 }
     });
-
     return response.data.tracks.items;
 }
 
-// --- FUNZIONE LAST.FM ESTESA ---
-async function getTrackInfoLastFM(artist, trackName, geminiMood) {
-    const apiKey = process.env.LASTFM_API_KEY;
-    
-    let resultKey = null;
-    let tags = [];
-    let duration = 0;
+async function getMusicAnalysisWithGemini(artist, title) {
+    try {
+        console.log(`Analyzing: "${title}" by ${artist}`);
+        
+        const prompt = `
+        Act as an expert Musicologist.
+        Analyze the song: "${title}" by "${artist}".
+        
+        Return ONLY a valid JSON object (no markdown) with these keys:
+        - "key": The precise musical key (e.g., "C Major", "F# Minor").
+        - "bpm": Tempo in BPM (integer).
+        - "mood": { "valence": (0.0 to 1.0), "energy": (0.0 to 1.0) }.
+        - "tags": Array of 5 strings (genre, vibe).
 
-    if (apiKey) {
-        try {
-            console.log(`[Last.fm] Analizzo: ${trackName} - ${artist}`);
-            const url = `http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${apiKey}&artist=${encodeURIComponent(artist)}&track=${encodeURIComponent(trackName)}&format=json`;
+        If unsure, estimate based on the artist's style.
+        `;
 
-            const response = await axios.get(url, { timeout: 3000 });
-            
-            if (response.data && response.data.track) {
-                // Estrai Tags
-                if(response.data.track.toptags && response.data.track.toptags.tag) {
-                    const tagData = response.data.track.toptags.tag;
-                    const tagArray = Array.isArray(tagData) ? tagData : [tagData];
-                    tags = tagArray.map(t => t.name);
+        const result = await geminiModel.generateContent(prompt);
+        const text = cleanGeminiJSON(result.response.text());
+        return JSON.parse(text);
 
-                    // TENTATIVO DI ESTRARRE CHIAVE DAI TAG (es. "C Major")
-                    // Cerca tag che sembrano chiavi musicali
-                    const keyRegex = /^([A-G][#b]?)\s?(major|minor|m|maj)$/i;
-                    const foundTag = tags.find(t => keyRegex.test(t));
-                    if (foundTag) {
-                        // Normalizza (es. "c minor" -> "C Minor")
-                        const match = foundTag.match(keyRegex);
-                        const note = match[1].toUpperCase().replace('B', 'b'); // Handle flat notation if needed
-                        const mode = (match[2].toLowerCase().startsWith('m') && match[2] !== 'major') ? 'Minor' : 'Major';
-                        resultKey = `${note} ${mode}`;
-                        console.log(`[Last.fm] Chiave trovata nei tag: ${resultKey}`);
-                    }
-                }
-                duration = response.data.track.duration || 0;
-            }
-        } catch (error) {
-            console.error(`[Last.fm] Errore API: ${error.message}`);
-        }
+    } catch (e) {
+        console.error("Musicologist Error:", e.message);
+        return { 
+            key: "C Major", 
+            bpm: 100, 
+            mood: {valence: 0.5, energy: 0.5}, 
+            tags: ["music", "fallback"] 
+        };
     }
-
-    // FALLBACK DETERMINISTICO SE NON TROVATA
-    if (!resultKey) {
-        resultKey = getDeterministicKey(artist, trackName);
-        console.log(`[System] Chiave generata (fallback): ${resultKey}`);
-    }
-
-    // Stima BPM da Gemini Mood (Energia)
-    let estimatedBPM = 100;
-    if (geminiMood && geminiMood.energy) {
-        estimatedBPM = Math.round(60 + (geminiMood.energy * 120));
-    }
-
-    return {
-        source: apiKey ? "Last.fm + Logic" : "Fallback Logic",
-        tags: tags.slice(0, 5),
-        bpm: estimatedBPM,
-        mood: geminiMood,
-        key: resultKey, // ECCOLA!
-        duration_ms: duration
-    };
 }
 
-// --- API CHAT ENDPOINT ---
 app.post('/chat', async (req, res) => {
     try {
         const userText = req.body.message;
-        if (!userText) return res.status(400).json({ error: "Messaggio vuoto" });
+        console.log("User Input:", userText);
 
-        // 1. GEMINI: Analisi Emotiva
-        const prompt = `You are the "DJ Therapist".
-            INPUT: "${userText}"
-            Create a JSON response:
-            {
-            "reply": "Brief empathetic reply (max 20 words).",
-            "searchQuery": "Spotify search query for a song matching the mood.",
-            "mood": { "valence": 0.5, "energy": 0.5 }
-            }`;
+        if (!userText) return res.status(400).json({ error: "Empty message" });
 
-        const result = await geminiModel.generateContent(prompt);
-        let textResponse = await result.response.text();
+        const therapistPrompt = `
+        You are the "DJ Therapist," an advanced AI specialized in Musicotherapy.
         
-        // Pulizia JSON (Gemini a volte mette backticks)
-        textResponse = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
-        const aiData = JSON.parse(textResponse);
+        ### INPUT:
+        "${userText}"
 
-        let trackInfo = null;
-        let analysisData = null;
+        ### INSTRUCTIONS:
+        1. Analyze Sentiment.
+        2. Formulate a brief, empathetic reply in ENGLISH (max 20 words).
+        3. Create a Spotify search query for a song.
         
-        try {
-            // 2. SPOTIFY: Trova la canzone
-            const tracks = await searchSpotifyTrack(aiData.searchQuery);
-            
-            if (tracks && tracks.length > 0) {
-                const track = tracks[0];
-                console.log(`🎵 Canzone scelta: ${track.name} - ${track.artists[0].name}`);
-
-                // 3. LAST.FM + LOGICA: Ottieni Metadata e Chiave
-                analysisData = await getTrackInfoLastFM(track.artists[0].name, track.name, aiData.mood);
-
-                trackInfo = {
-                    id: track.id,
-                    title: track.name,
-                    artist: track.artists[0].name,
-                    cover: track.album.images[0]?.url,
-                    preview: track.preview_url,
-                    key: analysisData.key // Passiamo la chiave al Frontend!
-                };
-            }
-        } catch (err) {
-            console.error("Errore flusso musica:", err.message);
+        ### SONG SELECTION RULES (STRICT):
+        - The song MUST be a **famous, commercial, mainstream track** (Pop, Rock, R&B, Jazz, Soul, Indie).
+        - The song MUST have a specific Author and Title.
+        - **DO NOT** suggest white noise, rain sounds, binaural beats, meditation frequencies, or generic instrumental loops.
+        - **DO NOT** suggest obscure or unknown tracks.
+        
+        ### JSON OUTPUT FORMAT:
+        {
+          "reply": "String (English)",
+          "searchQuery": "String (Artist - Title)",
+          "mood": { "valence": Float, "energy": Float }
         }
 
-        // Risposta al Frontend
+        RETURN ONLY JSON. NO MARKDOWN.
+        `;
+
+        const chatResult = await geminiModel.generateContent(therapistPrompt);
+        const chatClean = cleanGeminiJSON(chatResult.response.text());
+        
+        let chatJson;
+        try {
+            chatJson = JSON.parse(chatClean);
+        } catch (parseError) {
+            console.error("JSON Parse Error:", chatClean);
+            throw new Error("Invalid JSON from Gemini Chat");
+        }
+
+        let trackInfo = null;
+        let analysisData = {
+            source: "Gemini Emotion",
+            key: "C Major",
+            bpm: 100,
+            mood: chatJson.mood || { valence: 0.5, energy: 0.5 },
+            tags: []
+        };
+
+        if (chatJson.searchQuery) {
+            try {
+                console.log(`Spotify Search: "${chatJson.searchQuery}"`);
+                const tracks = await searchSpotifyTrack(chatJson.searchQuery);
+
+                if (tracks && tracks.length > 0) {
+                    const track = tracks[0];
+                    const artistName = track.artists[0].name;
+                    const trackTitle = track.name;
+                    
+                    console.log(`Found: "${trackTitle}" - ${artistName}`);
+
+                    const musicData = await getMusicAnalysisWithGemini(artistName, trackTitle);
+
+                    analysisData = {
+                        source: "Gemini Musicologist",
+                        key: musicData.key,
+                        bpm: musicData.bpm,
+                        mood: musicData.mood,
+                        tags: musicData.tags,
+                        duration_ms: track.duration_ms
+                    };
+
+                    trackInfo = {
+                        id: track.id,
+                        title: trackTitle,
+                        artist: artistName,
+                        cover: track.album.images[0]?.url,
+                        preview: track.preview_url,
+                        key: musicData.key
+                    };
+                } else {
+                    console.log("No tracks found on Spotify.");
+                }
+            } catch (spotifyErr) {
+                console.error("Spotify Search Error:", spotifyErr.message);
+            }
+        }
+
         res.json({
-            reply: aiData.reply,
+            reply: chatJson.reply,
             track: trackInfo,
             analysis: analysisData
         });
 
     } catch (error) {
-        console.error("Errore Server:", error);
+        console.error("Server Error:", error);
         res.status(500).json({ 
-            reply: "Qualcosa è andato storto nei miei circuiti.",
-            mood: { valence: 0.5, energy: 0.5 } 
+            reply: "I am having some technical trouble. Please try again.",
+            error: error.message 
         });
     }
 });
 
 const PORT = 3001;
 server.listen(PORT, () => {
-  console.log(`Server attivo su http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

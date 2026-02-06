@@ -33,7 +33,7 @@ const Dock = ({ mode, setMode, onBurnClick, ambientType, onPlayAmbient }) => {
       <button 
         style={{...styles.btn, ...(mode === 'breathe' ? styles.activeBreathe : {})}} 
         onClick={() => setMode(mode === 'flow' ? 'breathe' : 'flow')} 
-        title="Respiro Guidato"
+        title="Guided Breathing"
       >
         {mode === 'breathe' ? <GiLungs /> : <BsStars />}
       </button>
@@ -42,7 +42,7 @@ const Dock = ({ mode, setMode, onBurnClick, ambientType, onPlayAmbient }) => {
       <button 
         style={styles.btn} 
         onClick={onBurnClick} 
-        title="Brucia Pensieri"
+        title="Burn Thoughts"
       >
         <FaFire />
       </button>
@@ -52,7 +52,7 @@ const Dock = ({ mode, setMode, onBurnClick, ambientType, onPlayAmbient }) => {
         <button 
           style={{...styles.btn, ...(ambientType !== 'off' ? styles.activeSound : {})}} 
           onClick={() => setShowSoundMenu(!showSoundMenu)}
-          title="Suoni Ambientali"
+          title="Ambient Sounds"
         >
           <FaMusic />
         </button>

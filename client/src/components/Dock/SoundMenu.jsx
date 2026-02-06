@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaVolumeMute, FaTree, FaBrain, FaCloudRain, FaOm } from 'react-icons/fa';
 import { GiEarthAmerica } from 'react-icons/gi';
 
 const soundOptions = [
-  { type: 'off', label: 'Muto', icon: <FaVolumeMute /> },
+  { type: 'off', label: 'Mute', icon: <FaVolumeMute /> },
   { type: 'brown', label: 'Earth', icon: <GiEarthAmerica /> },
   { type: 'green', label: 'Forest', icon: <FaTree /> },
   { type: 'pink', label: 'Rain', icon: <FaCloudRain /> },
@@ -12,6 +12,8 @@ const soundOptions = [
 ];
 
 const SoundMenu = ({ currentType, onSelect, isOpen, onClose }) => {
+  const [hoveredId, setHoveredId] = useState(null);
+
   const styles = {
     menu: {
       position: 'absolute',
@@ -35,15 +37,37 @@ const SoundMenu = ({ currentType, onSelect, isOpen, onClose }) => {
       scale: isOpen ? '1' : '0.95',
       translate: isOpen ? '0 0' : '0 10px'
     },
+    // STILE BASE (Resettiamo tutto qui per evitare il blu di default)
     item: {
-      display: 'flex', alignItems: 'center', gap: '15px', padding: '12px 16px',
-      color: '#888', fontSize: '0.95rem', fontWeight: '500', cursor: 'pointer',
-      borderRadius: '12px', transition: 'all 0.2s ease', border: 'none',
-      background: 'transparent', width: '100%', textAlign: 'left', outline: 'none'
+      display: 'flex', 
+      alignItems: 'center', 
+      gap: '15px', 
+      padding: '12px 16px',
+      color: '#888', // Grigio spento di base
+      fontSize: '0.95rem', 
+      fontWeight: '500', 
+      cursor: 'pointer',
+      borderRadius: '12px', 
+      transition: 'all 0.2s ease', 
+      border: 'none',
+      backgroundColor: 'transparent', // FORZIAMO TRASPARENTE SEMPRE
+      width: '100%', 
+      textAlign: 'left', 
+      outline: 'none',
+      margin: 0 // Reset margini
     },
+    // STILE ATTIVO (Elemento selezionato)
     itemActive: {
-      backgroundColor: 'rgba(255, 255, 255, 0.1)', color: '#fff', fontWeight: '600',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+      backgroundColor: 'transparent', // NIENTE SFONDO BIANCO
+      color: '#4da6ff', // Azzurro neon (Theme color)
+      fontWeight: 'bold',
+      textShadow: '0 0 10px rgba(77, 166, 255, 0.3)' // Leggero bagliore sul testo
+    },
+    // STILE HOVER (Passaggio mouse)
+    itemHover: {
+      backgroundColor: 'transparent', // NIENTE SFONDO
+      color: '#fff', // Diventa bianco puro
+      transform: 'translateX(5px)' // Piccolo movimento per feedback
     }
   };
 
@@ -51,15 +75,37 @@ const SoundMenu = ({ currentType, onSelect, isOpen, onClose }) => {
     <div style={styles.menu}>
       {soundOptions.map((opt) => {
         const isActive = currentType === opt.type;
+        const isHovered = hoveredId === opt.type;
+
+        let finalStyle = { ...styles.item };
+        
+        if (isActive) {
+          finalStyle = { ...finalStyle, ...styles.itemActive };
+        } else if (isHovered) {
+          finalStyle = { ...finalStyle, ...styles.itemHover };
+        }
+
         return (
           <button
             key={opt.type}
-            style={{ ...styles.item, ...(isActive ? styles.itemActive : {}) }}
-            onMouseEnter={(e) => { if(!isActive) { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.03)'; e.currentTarget.style.color = '#ccc'; } }}
-            onMouseLeave={(e) => { if(!isActive) { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = '#888'; } }}
-            onClick={() => { onSelect(opt.type); onClose(); }}
+            style={finalStyle}
+            onMouseEnter={() => setHoveredId(opt.type)}
+            onMouseLeave={() => setHoveredId(null)}
+            onClick={() => { 
+              onSelect(opt.type); 
+              onClose(); 
+              setHoveredId(null); 
+            }}
           >
-            <span style={{ fontSize: '1.1rem', width: '24px', display: 'flex', justifyContent: 'center', opacity: isActive ? 1 : 0.7 }}>
+            <span style={{ 
+              fontSize: '1.1rem', 
+              width: '24px', 
+              display: 'flex', 
+              justifyContent: 'center', 
+              // L'icona è luminosa se attiva o in hover, spenta altrimenti
+              opacity: (isActive || isHovered) ? 1 : 0.5,
+              transition: 'opacity 0.2s'
+            }}>
               {opt.icon}
             </span> 
             {opt.label}
