@@ -3,20 +3,20 @@ require('dotenv').config();
 const apiKey = process.env.GEMINI_API_KEY;
 const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
 
-console.log("🔍 Chiedo a Google la lista dei modelli disponibili...");
+console.log("Chiedo a Google la lista dei modelli disponibili...");
 
 import('node-fetch').then(({ default: fetch }) => {
     fetch(url)
     .then(response => response.json())
     .then(data => {
         if (data.error) {
-            console.error("❌ ERRORE API:", data.error.message);
+            console.error("ERRORE API:", data.error.message);
         } else {
-            console.log("✅ MODELLI DISPONIBILI PER TE:");
+            console.log("MODELLI DISPONIBILI PER TE:");
             data.models.forEach(m => {
-                // Mostra solo i modelli che generano contenuto (non quelli per l'embedding)
+                // Mostra solo i modelli che generano contenuto
                 if(m.supportedGenerationMethods.includes("generateContent")) {
-                    console.log(`👉 ${m.name.replace('models/', '')}`);
+                    console.log(`${m.name.replace('models/', '')}`);
                 }
             });
         }
@@ -28,10 +28,10 @@ import('node-fetch').then(({ default: fetch }) => {
     .then(response => response.json())
     .then(data => {
         if (data.models) {
-             console.log("✅ MODELLI DISPONIBILI PER TE:");
+             console.log("MODELLI DISPONIBILI PER TE:");
              data.models.forEach(m => {
                 if(m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")) {
-                    console.log(`👉 ${m.name.replace('models/', '')}`);
+                    console.log(`${m.name.replace('models/', '')}`);
                 }
             });
         } else {
