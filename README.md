@@ -1,49 +1,52 @@
-# DJ Therapist AI: Interactive Music & Visual Therapy
+# Serenify: AI-Driven Audio-Visual Therapy
 
 ### 1-line description
-A holistic web application merging generative AI, music therapy, and interactive generative art to promote mental well-being and emotional regulation.
+A holistic web application merging Generative AI, music therapy, and interactive fluid simulations to promote mental well-being through multi-sensory synchronization.
 
 ### Description
-**DJ Therapist AI** is a digital safe space designed for users seeking relaxation, emotional venting, or guidance. The user experience is divided into three interconnected, neuro-aesthetics-driven components:
+**Serenify** is a digital sanctuary designed for users seeking relaxation, emotional regulation, or guidance. The experience orchestrates three interconnected, neuro-aesthetics-driven components:
 
-1.  **AI Counseling & Music Discovery:** An empathic chatbot (powered by **Google Gemini**) dialogues with the user, analyzes text sentiment, and suggests **Spotify** tracks tuned to the detected mood. We utilize **Last.fm** APIs to enrich track metadata and retrieve musical tags, ensuring a deep understanding of the song's context.
+1.  **AI Counseling & The "Musicologist" Agent:**
+    * An empathic chatbot (powered by **Google Gemini 1.5 Flash**) acts as a "DJ Therapist," analyzing the user's sentiment to offer support and curate specific musical suggestions (ISO Principle).
+    * **Innovation:** Unlike traditional apps that rely on deprecated audio analysis APIs, Serenify employs a secondary AI Agent (The **"AI Musicologist"**) that leverages Gemini's vast knowledge base to accurately retrieve technical metadata (**Musical Key, BPM, and Mood**) for the selected track.
 
-2.  **Evolutionary Visualizer (The Primordial Soup):** A generative background built in **p5.js** that simulates a "Primordial Soup."
-    * **Scientific Inspiration:** Inspired by the **Oparin-Haldane hypothesis** (1924) regarding the origin of life, we simulated a prebiotic ocean where simple organic compounds evolve into complex structures through **Abiogenesis**. The visualizer isn't just a video loop, but an agent-based simulation.
-    * **Particle Lifecycle:** Luminous particles are born with specific energy levels and move organically using fluid dynamics (Perlin Noise). They follow a biological cycle: they age, lose energy, and eventually "die" to make room for new life.
-    * **Harmonic Fusion:** When two fertile particles collide, they merge (simulating chemical bonding). This event triggers a synthesized sound using the Web Audio API. **Crucially, the system analyzes the Musical Key of the playing song (e.g., C# Minor) and forces the particles to "sing" only notes from that specific scale.** This creates a generative melody that is always mathematically consonant with the user's music.
+2.  **Evolutionary Visualizer (The Living Canvas):**
+    * A generative background built in **p5.js** simulating a "Primordial Soup" of luminous organic particles.
+    * **Harmonic Synchronization:** The system reads the **Musical Key** (e.g., C# Minor) identified by the AI and forces particle collisions to synthesize sounds only within that specific scale, ensuring mathematical consonance with the playing track.
+    * **Rhythmic Synchronization (New):** The simulation physics is driven by the song's **BPM** (Beats Per Minute). The Tempo controls the particles' velocity, turbulence, and pulsation rate. A slow ballad creates a calm, floating ecosystem; an energetic track accelerates the fluid dynamics, making the visualizer "dance" to the beat.
 
 3.  **Therapeutic Rituals:**
-    * **Breathe Mode (L-Systems):** A guided interface for deep breathing (coherence technique). During inspiration, chaotic particles vanish to reveal giant concentric fractal mandalas. These are generated using **L-Systems (Lindenmayer Systems)**, a mathematical formalism introduced by biologist Aristid Lindenmayer in 1968 to model plant growth.
-        * *Implementation:* We defined an **Axiom** (initial string) and a set of **Production Rules** (e.g., `F -> F-[[X]+X]+F`). At every breath cycle, the system recursively rewrites the string, which is then interpreted by a "Turtle Graphics" engine to draw organic, branching structures. This recursive self-similarity is proven to be visually soothing.
-    * **Burn Thoughts:** A digital catharsis ritual. The user types a negative thought; after 3 seconds of focus, the text visually ignites using a "Pixel Scanning" technique and "Additive Layering" for a realistic fire effect.
+    * **Breathe Mode (L-Systems):** A guided deep-breathing interface. Chaos vanishes to reveal expanding fractal mandalas generated via **Lindenmayer Systems** (recursive mathematical structures), synchronized with the user's breath cycle.
+    * **Burn Thoughts:** A digital catharsis ritual where negative thoughts typed by the user are visually incinerated using pixel-scanning algorithms and additive blending fire effects.
 
 ### Design Philosophy & Neuroscience
-Our primary goal was **Radical Simplicity**. In a therapeutic context, visual complexity can increase cognitive load and anxiety. Therefore:
+Our primary goal was **Radical Simplicity** and **Flow State**.
 
-* **Default Mode Network (DMN):** We designed the interface to minimize "Task-Positive" brain activity (active problem solving) and encourage the activation of the **Default Mode Network**, a brain state associated with wakeful rest, daydreaming, and memory consolidation.
-* **The Sublime & Scale:** By simulating a "World in Creation" (the Primordial Soup) rather than concrete geometric shapes, we aim to induce a sense of vastness ("The Sublime"). Psychologically, feeling "small" relative to a cosmic process helps reduce the perceived weight of personal ego-centric problems, facilitating a "flow state."
+* **Default Mode Network (DMN):** The interface minimizes "Task-Positive" brain activity to encourage the DMN activation, associated with wakeful rest and daydreaming.
+* **Audio-Visual Entrainment:** By synchronizing visual motion (particles) with auditory cues (Key & BPM), we aim to induce a state of coherence, reducing cognitive load and anxiety.
 
 ### Challenges, accomplishments, and lessons learned
 
 * **Challenges:**
-    * **Spotify API Deprecation:** We faced a hurdle when Spotify deprecated their *Audio Features* endpoint. We overcame this by implementing a hybrid fallback system: we first attempt to extract the Key from **Last.fm tags**, and if that fails, we use a deterministic hashing algorithm based on the track title to ensure consistent audio visualization.
-    * **Graphics Performance:** Managing a population of living particles that check for collisions ($O(n^2)$ complexity) while synthesizing audio in real-time required optimizing the p5.js loop and utilizing `useCallback` hooks in React.
+    * **The "Black Box" of Audio Analysis:** Spotify deprecated their Audio Features endpoint, making it impossible to get Key/BPM programmatically. We solved this by engineering a **Prompt Engineering pipeline** where Gemini acts as a music theory expert, extracting accurate metadata for famous tracks directly from its training data.
+    * **Physics Tuning:** Mapping BPM (60-180 range) to particle velocity vectors without breaking the simulation required careful calibration of the physics engine to ensure the movement remained organic, never robotic.
+
 * **Accomplishments:**
-    * **Harmonic Particle Engine:** We successfully built a system where visual art creates music. The particles don't just make random noises; they play "in key." If the song is sad (Minor scale), the particles play melancholic notes; if happy (Major scale), they play bright notes.
-    * **Audio Synthesis:** Instead of static audio files, we used the **Web Audio API** to synthesize everything—from the Brown Noise background (which breathes with an LFO) to the binaural pads generated by particle collisions.
-* **Lessons learned:** We learned how to translate music theory into code and how to decouple complex simulation logic from the React UI layer. We also deepened our understanding of L-Systems and how recursive math can mimic nature to induce calmness.
+    * **Full Sensory Sync:** We achieved a system where the visuals are not just a loop, but a live interpretation of the music. If the song is sad (Minor Key) and slow (low BPM), the visualizer physically embodies that melancholy.
+    * **AI Orchestration:** Successfully chaining two AI agents (Therapist + Musicologist) to deliver a seamless user experience in under a second.
+
+* **Lessons learned:**
+    * We learned that LLMs can replace traditional database APIs for static knowledge (like song keys).
+    * We deepened our understanding of **p5.js** optimization, managing hundreds of interactive particles reacting to global state changes (BPM/Key) in real-time.
 
 ### Technology
 * **Frontend:** React.js, p5.js (Creative Coding), CSS3 (Glassmorphism UI).
-* **Audio:** Web Audio API (Real-time procedural synthesis, Oscillators, LFOs).
 * **Backend:** Node.js, Express.js.
 * **AI & Data:**
-    * **Google Gemini API:** NLP & Sentiment Analysis.
-    * **Spotify API:** Music Recommendation & Playback.
-    * **Last.fm API:** Metadata enrichment and Musical Key extraction.
+    * **Google Gemini 1.5 Flash:** NLP, Sentiment Analysis, and Musicological Data Extraction (Key/BPM).
+    * **Spotify API:** Track Search & Playback.
+* **Audio Engine:** Web Audio API (Real-time procedural synthesis, Binaural Beats, Oscillators).
 * **Deployment:** Firebase Hosting (Frontend), Render (Backend).
-* **Concepts:** L-Systems (Fractals), Agent-based Systems, Additive Blending, Music Theory, Default Mode Network, Oparin-Haldane Hypothesis.
 
 ### Students
 * **Alberto Bollino**
