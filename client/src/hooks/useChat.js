@@ -25,20 +25,16 @@ export const useChat = (setMusicalKey) => {
       
       const data = await response.json();
       
-      // 2. Aggiungi risposta bot
       setMessages((prev) => [...prev, { role: 'bot', text: data.reply }]);
       
-      // 3. Aggiorna Mood
       if (data.analysis?.mood) moodRef.current = data.analysis.mood;
       else if (data.mood) moodRef.current = data.mood;
 
-      // 4. ESTRAZIONE BPM
       if (data.analysis?.bpm) {
           console.log("Setting BPM to:", data.analysis.bpm);
           setBpm(data.analysis.bpm);
       }
       
-      // 5. Aggiorna Musica e Chiave
       if (data.track) { 
         if (data.track.id) {
             setTrackId(data.track.id); 
@@ -64,7 +60,7 @@ export const useChat = (setMusicalKey) => {
     trackId,
     setTrackId,
     moodRef,
-    bpm, // Esportiamo il BPM
+    bpm, 
     sendMessage
   };
 };

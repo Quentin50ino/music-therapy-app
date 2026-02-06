@@ -1,3 +1,26 @@
+ /**
+ * Renders the hypnotic, recursive background for the "Breathe" mode.
+ * * FRACTAL GEOMETRY ENGINE:
+ * This function generates a "Flower of Life" style fractal pattern using recursive circles.
+ * Unlike the L-System (which is vector-based), this uses geometric recursion to create a
+ * deep, tunnel-like effect that expands and contracts with the user's breath.
+ *
+ * * VISUAL SYNC:
+ * The entire structure is tightly coupled to the 'breathCycle' (0.0 to 1.0):
+ * - Inhale (approaching 1.0): The fractal expands (scale), brightens (alpha), and lines get thicker (weight).
+ * - Exhale (approaching 0.0): The fractal contracts, dims, and becomes more delicate.
+ *
+ * * RECURSIVE LOGIC:
+ * 1. Sets context to Additive Blending for a glowing light effect.
+ * 2. Defines an inner closure `drawCircle` that draws a parent circle.
+ * 3. If depth allows, it calculates 6 equidistant points on the perimeter (Hexagonal symmetry).
+ * 4. Calls itself recursively at those new points with half the diameter.
+ *
+ * @param {object} p5 - The p5.js instance.
+ * @param {object} preset - Configuration for color (hue/sat) and rotation speed.
+ * @param {number} breathCycle - A normalized float (0.0 to 1.0) representing the current breath phase (Sine wave).
+ * @returns {void} Directly modifies the p5 canvas.
+ */
  export const drawRecursiveFractalBackground = (p5, preset, breathCycle) => {
     p5.blendMode(p5.ADD);
     p5.push();

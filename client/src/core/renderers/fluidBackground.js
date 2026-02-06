@@ -1,7 +1,28 @@
 import { LuminousParticle } from "../entities/LuminousParticle.js";
 import { Ripple } from "../entities/Ripple.js";
-import { SOUND_PRESETS } from "../constants.js";
 
+/**
+ * Manages the rendering and simulation logic of the fluid particle system ("Primordial Soup").
+ * * THIS IS THE CORE "PHYSICS ENGINE" OF THE FLOW MODE.
+ * It is responsible for updating, drawing, and handling interactions between luminous particles for every frame.
+ * * DETAILED OPERATION:
+ * 1. Rendering: Sets blendMode to ADD to create the "glowing/neon" visual effect when particles overlap.
+ * 2. Physics Loop: Iterates through all existing particles (organisms):
+ * - Calculates new positions based on fluid dynamics.
+ * - Renders the particle onto the canvas.
+ * 3. Collision & Reproduction (O(n^2) logic):
+ * - Checks if two "fertile" particles are close enough to touch.
+ * - If yes: creates a new child particle, generates a visual "Ripple", and triggers the audio callback (onMerge).
+ * 4. Lifecycle Management: Removes "dead" particles (those that ran out of energy or lifespan).
+ * 5. Population Control: If the population drops below a threshold, it automatically spawns new particles to keep the system alive.
+ * * @param {object} p5 - The main p5.js instance used for drawing.
+ * @param {React.MutableRefObject} organisms - Ref containing the array of all living particles (LuminousParticle).
+ * @param {object} targetPreset - Current configuration object (hue, speed) based on the active sound or mood.
+ * @param {React.MutableRefObject} onMergeRef - Ref to the callback function that triggers the harmonic sound upon particle fusion.
+ * @param {React.MutableRefObject} ripples - Ref containing the array of visual Ripples to be generated.
+ * @param {React.MutableRefObject} modeRef - Ref indicating the current app mode (e.g., 'flow', 'breathe') to determine if spawning is allowed.
+ * * @returns {void} No return value. Directly modifies the p5 canvas and mutates the passed Ref arrays.
+ */
 export const drawFluidBackground = (p5, organisms, targetPreset, onMergeRef, ripples, modeRef) => {
     p5.blendMode(p5.ADD); 
     for (let i = 0; i < organisms.current.length; i++) {
@@ -32,7 +53,6 @@ export const drawFluidBackground = (p5, organisms, targetPreset, onMergeRef, rip
         }
     }
     if (organisms.current.length < 10 && modeRef.current === 'flow') {
-        const dna = { speed: p5.random(0.5, 1.5), size: p5.random(10, 30) };
         let px = p5.random(p5.width);
         let py = p5.random(p5.height);
         organisms.current.push(new LuminousParticle(p5, px, py, 0.3, targetPreset));

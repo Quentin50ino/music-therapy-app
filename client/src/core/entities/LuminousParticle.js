@@ -16,7 +16,6 @@ export class LuminousParticle {
     this.isDeadState = false;
   }
 
-  // NUOVO ARGOMENTO: bpm
   update(p5, preset, bpm) {
     let angle = p5.noise(this.xOff, this.yOff, p5.frameCount * 0.002) * p5.TWO_PI * 4;
     let flowForce = p5.createVector(p5.cos(angle), p5.sin(angle));
@@ -24,19 +23,16 @@ export class LuminousParticle {
     
     let speedMod = p5.map(this.energy, 0, 1, 1.0, 0.5); 
 
-    // CALCOLO FATTORE BPM (60bpm = 0.6x, 180bpm = 1.8x)
     let bpmFactor = p5.map(bpm, 60, 180, 0.6, 1.8, true); 
 
     this.acc.add(flowForce);
     this.vel.add(this.acc);
     
-    // Applica bpmFactor alla velocità limite
     this.vel.limit(this.baseSpeed * preset.speed * speedMod * bpmFactor);
     
     this.pos.add(this.vel);
     this.acc.mult(0);
-    
-    // Il rumore evolve più velocemente se la musica è veloce
+
     this.xOff += 0.003 * bpmFactor;
     this.yOff += 0.003 * bpmFactor;
     
@@ -48,7 +44,6 @@ export class LuminousParticle {
     this.currentHue = p5.lerp(this.currentHue, preset.hue, 0.01);
     this.currentSat = p5.lerp(this.currentSat, preset.sat, 0.01);
     
-    // Wrap bordi
     if (this.pos.x > p5.width) this.pos.x = 0;
     if (this.pos.x < 0) this.pos.x = p5.width;
     if (this.pos.y > p5.height) this.pos.y = 0;
@@ -65,12 +60,9 @@ export class LuminousParticle {
       return new LuminousParticle(p5, midX, midY, newEnergy, null);
   }
 
-  // NUOVO ARGOMENTO: bpm
   display(p5, bpm) {
     p5.noStroke();
     
-    // Pulsazione sincronizzata col BPM
-    // Mappa BPM (60-180) a velocità oscillazione (0.03-0.15)
     let pulseSpeed = p5.map(bpm, 60, 180, 0.03, 0.15, true);
     
     let breath = p5.sin(p5.frameCount * pulseSpeed + this.pulseOffset);

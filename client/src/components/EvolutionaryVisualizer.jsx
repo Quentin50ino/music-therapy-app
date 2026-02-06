@@ -24,7 +24,6 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, 
   const p5Ref = useRef(null);
   const mainLSystem = useRef("");
   
-  // Refs per colore fluido
   const smoothedHueRef = useRef(210);
   const smoothedSatRef = useRef(80);
 
@@ -62,7 +61,6 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, 
     const currentMode = modeRef.current;
     const currentBpm = bpmRef.current;
 
-    // Calcolo Preset e Colore Fluido
     const targetPreset = SOUND_PRESETS[ambientTypeRef.current] || SOUND_PRESETS['off'];
     smoothedHueRef.current = p5.lerp(smoothedHueRef.current, targetPreset.hue, 0.05);
     smoothedSatRef.current = p5.lerp(smoothedSatRef.current, targetPreset.sat, 0.05);
@@ -70,7 +68,6 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, 
     const currentHue = smoothedHueRef.current;
     const currentSat = smoothedSatRef.current;
     
-    // Oggetto preset dinamico per le funzioni che richiedono ancora un oggetto
     const dynamicPreset = { ...targetPreset, hue: currentHue, sat: currentSat };
 
     const time = p5.millis() / 1000;

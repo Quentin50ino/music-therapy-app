@@ -168,7 +168,6 @@ export const useAudioEngine = (musicalKey, mode) => {
     if (gainNodeRef.current) gainNodeRef.current.gain.setTargetAtTime(Math.max(0, Math.min(0.8, vol)), ctx.currentTime, 0.1);
   }, [mode, ambientType]);
 
-  // Modulazione Respiro
   useEffect(() => {
     let animationFrameId;
     const modulateBreathSound = () => {

@@ -1,3 +1,24 @@
+/**
+ * Renders the soft, pulsating atmospheric background for the "Breathe" mode.
+ * * ATMOSPHERIC LAYER:
+ * This function creates a subtle, nebulous backdrop that sits behind the sharp fractal geometry.
+ * Unlike the "Primordial Soup" (which is fluid and chaotic), this layer is rhythmic and structured.
+ *
+ * * VISUAL SYNC:
+ * It connects the user's breath to the ambient light of the environment:
+ * - Inhale (approaching 1.0): The nebula expands (pulseSize) and brightens (pulseBri).
+ * - Exhale (approaching 0.0): The nebula contracts and dims.
+ *
+ * * RENDERING LOGIC:
+ * 1. Uses a low-resolution grid (step = 80px) to draw large, soft, overlapping orbs.
+ * 2. Perlin Noise determines the placement and base size of these orbs to avoid a mechanical look.
+ * 3. The overlapping low-alpha circles blend together to form a seamless, cloud-like texture.
+ *
+ * @param {object} p5 - The p5.js instance.
+ * @param {object} preset - Color configuration (hue/sat).
+ * @param {number} breathCycle - Normalized float (0.0 to 1.0) representing the current breath phase.
+ * @returns {void} Directly modifies the p5 canvas.
+ */
 export const drawBreathingNebula = (p5, preset, breathCycle) => {
       p5.blendMode(p5.BLEND);
       p5.noStroke();

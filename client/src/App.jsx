@@ -27,7 +27,7 @@ const App = () => {
     isLoading, 
     trackId, 
     moodRef, 
-    bpm, // Recuperiamo il BPM
+    bpm,
     sendMessage 
   } = useChat(setMusicalKey);
 
@@ -38,10 +38,6 @@ const App = () => {
     triggerFireSound, 
     handleVisualInteraction 
   } = useAudioEngine(musicalKey, mode);
-
-  useEffect(() => {
-    if (trackId) setShowChat(false);
-  }, [trackId]);
 
   const handleBurnConfirm = (text) => {
     if (!text) return;
@@ -58,7 +54,6 @@ const App = () => {
   return (
     <div style={layoutStyles.container}>
       
-      {/* BACKGROUND GENERATIVO */}
       <div style={layoutStyles.visualLayer}>
         <EvolutionaryVisualizer 
           moodData={moodRef.current}

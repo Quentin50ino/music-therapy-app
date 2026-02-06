@@ -1,6 +1,4 @@
-// File: src/core/renderers/drawBreathScene.js (o dove preferisci metterlo)
-
-import { drawFractalRing } from "../logic/l-systems"; // Controlla che questo percorso sia giusto!
+import { drawFractalRing } from "../logic/l-systems";
 
 export const drawBreathScene = (p5, breathCycle, preset, lSystemString) => {
     // Usa ADD per l'effetto luminoso/etereo

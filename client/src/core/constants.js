@@ -10,7 +10,6 @@ export const SOUND_PRESETS = {
   '432':    { hue: 50,  sat: 100, speed: 0.4 }, 
 };
 
-// Frequenze base (Ottava 3 - Medio Basse, ideali per pad/chimes)
 export const BASE_FREQUENCIES = {
   'C': 130.81, 'C#': 138.59, 'Db': 138.59,
   'D': 146.83, 'D#': 155.56, 'Eb': 155.56,
@@ -21,13 +20,11 @@ export const BASE_FREQUENCIES = {
   'B': 246.94
 };
 
-// Ordine cromatico per calcolare gli intervalli
 export const NOTES_ORDER = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-// Intervalli in semitoni
 export const SCALES_INTERVALS = {
-  major: [0, 2, 4, 5, 7, 9, 11], // Scala Maggiore
-  minor: [0, 2, 3, 5, 7, 8, 10]  // Scala Minore Naturale
+  major: [0, 2, 4, 5, 7, 9, 11], 
+  minor: [0, 2, 3, 5, 7, 8, 10]  
 };
 
 export const soundOptions = [
