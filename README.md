@@ -43,7 +43,7 @@ Our primary goal was **Radical Simplicity** and **Flow State**.
 * **Frontend:** React.js, p5.js, CSS3.
 * **Backend:** Node.js, Express.js.
 * **AI & Data:**
-    * **Google Gemini 1.5 Flash:** NLP, Sentiment Analysis, and Musicological Data Extraction (Key/BPM).
+    * **Google Gemini 2.5 Flash:** NLP, Sentiment Analysis, and Musicological Data Extraction (Key/BPM).
     * **Spotify API:** Track Search & Playback.
 * **Audio Engine:** Web Audio API (Real-time procedural synthesis, Binaural Beats, Oscillators).
 * **Deployment:** Firebase Hosting (Frontend), Render (Backend).
