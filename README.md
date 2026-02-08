@@ -25,6 +25,25 @@ Our primary goal was **Radical Simplicity** and **Flow State**.
 * **Default Mode Network (DMN):** The interface minimizes "Task-Positive" brain activity to encourage the DMN activation, associated with wakeful rest and daydreaming.
 * **Audio-Visual Entrainment:** By synchronizing visual motion (particles) with auditory cues (Key & BPM), we aim to induce a state of coherence, reducing cognitive load and anxiety.
 
+### Design & Therapeutic Rationale
+The visual effects in the "Flow" section were designed based on creative computing principles and clinical literature regarding schizophrenia and sensory processing.
+
+1. The "Bokeh" Effect & Soft Blur
+The particles feature soft, blurred edges. According to neuroaesthetics and psychology literature, sharp, high-contrast images (high spatial frequency) require significant cognitive processing. Conversely, blurred or soft shapes (low spatial frequency) are processed via more "emotional" and less analytical visual pathways, effectively promoting relaxation.
+
+Visual Association: The aesthetic resembles bioluminescence (fireflies) or candlelight, evoking primal instincts of safety, warmth, and calm.
+
+2. The "Bonding" Metaphor
+The mechanic where particles gently merge and bond upon contact is a deliberate therapeutic choice. Schizophrenia is often associated with a sense of self-fragmentation or social isolation.
+
+Visual Metaphor: Witnessing separate entities softly merging to become "brighter" together serves as a powerful, non-verbal metaphor for reintegration, connection, and wholeness.
+
+3. Color Palette Strategy
+
+Dark Background: Essential for minimizing visual fatigue and eye strain, as photophobia (light sensitivity) can be common in certain stages of the condition.
+
+Gold/Amber Tones: These are warm colors that avoid the aggression often associated with red. They are chosen to stimulate a feeling of "welcome" and comfort.
+
 ### Challenges, accomplishments, and lessons learned
 
 * **Challenges:**
