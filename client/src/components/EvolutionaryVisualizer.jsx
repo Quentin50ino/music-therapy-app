@@ -10,7 +10,6 @@ import { drawBreathingNebula } from "../core/renderers/breathingNebula.js";
 import { drawRecursiveFractalBackground } from "../core/renderers/recursiveFractalBackground.js";
 import { drawBreathScene } from "../core/renderers/breathScene.js";
 
-<<<<<<< HEAD
 const BREATH_PROFILES = [
   {
     id: "box",
@@ -85,10 +84,6 @@ const getBreathState = (profile, elapsedMs) => {
 const EvolutionaryVisualizer = ({ moodData, mode, breathProfileIndex, burnSignal, ambientType, bpm, onInteraction, onParticleMerge }) => {
   const modeRef = useRef(mode);
   const breathProfileRef = useRef(breathProfileIndex || 0);
-=======
-const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, onInteraction, onParticleMerge }) => {
-  const modeRef = useRef(mode);
->>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
   const moodRef = useRef(moodData);
   const ambientTypeRef = useRef(ambientType); 
   const onMergeRef = useRef(onParticleMerge);
@@ -100,19 +95,13 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, 
 
   const p5Ref = useRef(null);
   const mainLSystem = useRef("");
-<<<<<<< HEAD
   const burnPhraseOverlay = useRef(null);
-=======
->>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
   
   const smoothedHueRef = useRef(210);
   const smoothedSatRef = useRef(80);
 
   useEffect(() => { modeRef.current = mode; }, [mode]);
-<<<<<<< HEAD
   useEffect(() => { breathProfileRef.current = Number.isInteger(breathProfileIndex) ? breathProfileIndex : 0; }, [breathProfileIndex]);
-=======
->>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
   useEffect(() => { moodRef.current = moodData || { valence: 0.5, energy: 0.5 }; }, [moodData]);
   useEffect(() => { ambientTypeRef.current = ambientType || 'off'; }, [ambientType]);
   useEffect(() => { onMergeRef.current = onParticleMerge; }, [onParticleMerge]);
@@ -155,18 +144,12 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, 
     
     const dynamicPreset = { ...targetPreset, hue: currentHue, sat: currentSat };
 
-<<<<<<< HEAD
     const breathProfile = BREATH_PROFILES[
       ((breathProfileRef.current % BREATH_PROFILES.length) + BREATH_PROFILES.length) % BREATH_PROFILES.length
     ];
     const breathState = getBreathState(breathProfile, p5.millis());
     const breathCycle = breathState.cycle;
     const breathLabel = breathState.label;
-=======
-    const time = p5.millis() / 1000;
-    const rawSin = Math.sin((time * (Math.PI * 2)) / 6.0 - Math.PI / 2);
-    const breathCycle = (rawSin + 1) / 2;
->>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
 
     if (currentMode === "flow") {
         drawPrimordialSoup(p5, dynamicPreset);
@@ -209,7 +192,6 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, 
         p5.blendMode(p5.BLEND); 
 
     } else if (currentMode === "breathe") {
-<<<<<<< HEAD
         const profilePreset = {
           ...dynamicPreset,
           hue: (dynamicPreset.hue + breathProfile.hueShift + 360) % 360,
@@ -218,11 +200,6 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, 
         drawBreathingNebula(p5, profilePreset, breathCycle, breathProfile);
         drawRecursiveFractalBackground(p5, profilePreset, breathCycle, breathProfile);
         drawBreathScene(p5, breathCycle, profilePreset, mainLSystem.current, breathLabel, breathProfile.name);
-=======
-        drawBreathingNebula(p5, dynamicPreset, breathCycle);
-        drawRecursiveFractalBackground(p5, dynamicPreset, breathCycle);
-        drawBreathScene(p5, breathCycle, dynamicPreset, mainLSystem.current);
->>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
     }
 
     for (let i = ripples.current.length - 1; i >= 0; i--) {
@@ -240,7 +217,6 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, 
             if (p.finished()) textParticles.current.splice(i, 1);
         }
     }
-<<<<<<< HEAD
 
     if (burnPhraseOverlay.current) {
         const overlay = burnPhraseOverlay.current;
@@ -300,8 +276,6 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, 
             p5.pop();
         }
     }
-=======
->>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
   }, []);
 
   const mousePressed = useCallback((p5) => {
@@ -334,19 +308,15 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, 
     if (burnSignal && burnSignal.text && p5Ref.current) {
       const p5 = p5Ref.current;
       const textToBurn = burnSignal.text;
-<<<<<<< HEAD
       const displayText = burnSignal.displayText || textToBurn;
       const isCalmSelected = burnSignal.effectStyle === 'calm-selected';
       const variant = isCalmSelected ? 'calm' : 'fire';
-=======
->>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
       const creationTime = p5.millis();
       let pg = p5.createGraphics(p5.width, p5.height);
       pg.pixelDensity(1); 
       pg.background(0, 0); 
       pg.fill(255); 
       pg.noStroke();
-<<<<<<< HEAD
       pg.textAlign(p5.LEFT, p5.TOP);
       pg.textStyle(p5.BOLD);
       pg.textFont('Arial'); 
@@ -423,26 +393,6 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, 
             duration: 22000
           }
         : null;
-=======
-      pg.textAlign(p5.CENTER, p5.CENTER);
-      let fontSize = 150;
-      if (textToBurn.length > 6) fontSize = 100;
-      if (textToBurn.length > 12) fontSize = 60;
-      pg.textSize(fontSize);
-      pg.textStyle(p5.BOLD);
-      pg.textFont('Arial'); 
-      pg.text(textToBurn, pg.width / 2, pg.height / 2);
-      pg.loadPixels();
-      const step = 4; 
-      for (let y = 0; y < pg.height; y += step) {
-        for (let x = 0; x < pg.width; x += step) {
-          const index = (x + y * pg.width) * 4;
-          if (pg.pixels[index + 3] > 128) {
-             textParticles.current.push(new TextParticle(p5, x, y, creationTime));
-          }
-        }
-      }
->>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
       pg.remove();
     }
   }, [burnSignal]);
@@ -458,8 +408,4 @@ const EvolutionaryVisualizer = ({ moodData, mode, burnSignal, ambientType, bpm, 
   );
 };
 
-<<<<<<< HEAD
 export default React.memo(EvolutionaryVisualizer);
-=======
-export default React.memo(EvolutionaryVisualizer);
->>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
