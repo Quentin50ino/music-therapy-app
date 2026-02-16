@@ -16,15 +16,23 @@ app.use(express.json());
 
 const server = http.createServer(app);
 
+<<<<<<< HEAD
 const GEMINI_MODEL_NAME = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const genAI = process.env.GEMINI_API_KEY ? new GoogleGenerativeAI(process.env.GEMINI_API_KEY) : null;
 const geminiModel = genAI ? genAI.getGenerativeModel({ model: GEMINI_MODEL_NAME }) : null;
+=======
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
+>>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
 
 const spotifyApi = new SpotifyWebApi({
   clientId: process.env.SPOTIFY_CLIENT_ID,
   clientSecret: process.env.SPOTIFY_CLIENT_SECRET
 });
+<<<<<<< HEAD
 const hasSpotifyCredentials = Boolean(process.env.SPOTIFY_CLIENT_ID && process.env.SPOTIFY_CLIENT_SECRET);
+=======
+>>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
 
 let spotifyToken = null;
 const refreshSpotifyToken = async () => {
@@ -36,12 +44,17 @@ const refreshSpotifyToken = async () => {
     console.error('Spotify Token Error:', err.message);
   }
 };
+<<<<<<< HEAD
 if (hasSpotifyCredentials) {
     refreshSpotifyToken();
     setInterval(refreshSpotifyToken, 1000 * 60 * 50);
 } else {
     console.warn('Spotify credentials missing: song recommendation will run without Spotify lookup.');
 }
+=======
+refreshSpotifyToken();
+setInterval(refreshSpotifyToken, 1000 * 60 * 50);
+>>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
 
 function cleanGeminiJSON(text) {
     let clean = text.replace(/```json/g, '').replace(/```/g, '').trim();
@@ -53,6 +66,7 @@ function cleanGeminiJSON(text) {
     return clean;
 }
 
+<<<<<<< HEAD
 function sanitizeThought(thought) {
     return (thought || '').trim().replace(/\s+/g, ' ');
 }
@@ -85,6 +99,9 @@ function normalizeReframes(rawReframes, originalThought) {
 
 async function searchSpotifyTrack(query) {
     if (!hasSpotifyCredentials) throw new Error("Spotify credentials missing");
+=======
+async function searchSpotifyTrack(query) {
+>>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
     if (!spotifyToken) throw new Error("Spotify Token not ready");
     const response = await axios.get('https://api.spotify.com/v1/search', {
         headers: { 'Authorization': `Bearer ${spotifyToken}` },
@@ -95,9 +112,12 @@ async function searchSpotifyTrack(query) {
 
 async function getMusicAnalysisWithGemini(artist, title) {
     try {
+<<<<<<< HEAD
         if (!geminiModel) {
             throw new Error("Gemini not configured");
         }
+=======
+>>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
         console.log(`Analyzing: "${title}" by ${artist}`);
         
         const prompt = `
@@ -130,6 +150,7 @@ async function getMusicAnalysisWithGemini(artist, title) {
 
 app.post('/chat', async (req, res) => {
     try {
+<<<<<<< HEAD
         if (!geminiModel) {
             return res.status(500).json({
                 reply: "Gemini is not configured on server.",
@@ -138,6 +159,9 @@ app.post('/chat', async (req, res) => {
         }
 
         const userText = sanitizeThought(req.body.message);
+=======
+        const userText = req.body.message;
+>>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
         console.log("User Input:", userText);
 
         if (!userText) return res.status(400).json({ error: "Empty message" });
@@ -243,6 +267,7 @@ app.post('/chat', async (req, res) => {
     }
 });
 
+<<<<<<< HEAD
 app.post('/burn-reframe', async (req, res) => {
     const thought = sanitizeThought(req.body.thought);
 
@@ -315,3 +340,9 @@ const PORT = 3001;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+=======
+const PORT = 3001;
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
+>>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e

@@ -21,6 +21,7 @@
  * @param {number} breathCycle - A normalized float (0.0 to 1.0) representing the current breath phase (Sine wave).
  * @returns {void} Directly modifies the p5 canvas.
  */
+<<<<<<< HEAD
  export const drawRecursiveFractalBackground = (p5, preset, breathCycle, profile = null) => {
     p5.blendMode(p5.ADD);
     p5.push();
@@ -31,13 +32,28 @@
     let breathWeight = 0.8 + (breathCycle * 1.1);
     let breathAlpha = 0.12 + (breathCycle * 0.2);
     let breathScale = 0.96 + (breathCycle * 0.12);
+=======
+ export const drawRecursiveFractalBackground = (p5, preset, breathCycle) => {
+    p5.blendMode(p5.ADD);
+    p5.push();
+    p5.translate(p5.width / 2, p5.height / 2);
+    p5.rotate(p5.frameCount * 0.001 * preset.speed);
+
+    let breathWeight = 1 + (breathCycle * 1.5); 
+    let breathAlpha = 0.25 + (breathCycle * 0.25); 
+    let breathScale = 1.0 + (breathCycle * 0.1); 
+>>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
 
     p5.scale(breathScale);
 
     const drawCircle = (x, y, d, depth) => {
         if (depth === 0) return;
         p5.noFill();
+<<<<<<< HEAD
         p5.stroke(preset.hue, preset.sat * 0.75, 56 + (breathCycle * 24), breathAlpha);
+=======
+        p5.stroke(preset.hue, preset.sat, 60 + (breathCycle * 20), breathAlpha); 
+>>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
         p5.strokeWeight(breathWeight);
         p5.circle(x, y, d);
         if (depth > 1) {
@@ -52,8 +68,16 @@
             }
         }
     };
+<<<<<<< HEAD
     let baseSize = p5.width * 0.52;
     drawCircle(0, 0, baseSize, 4);
     p5.pop();
     p5.blendMode(p5.BLEND);
   };
+=======
+    let baseSize = p5.width * 0.6; 
+    drawCircle(0, 0, baseSize, 4);
+    p5.pop();
+    p5.blendMode(p5.BLEND);
+  };
+>>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e

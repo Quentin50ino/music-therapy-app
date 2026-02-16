@@ -67,6 +67,7 @@ Gold/Amber Tones: These are warm colors that avoid the aggression often associat
 * **Audio Engine:** Web Audio API (Real-time procedural synthesis, Binaural Beats, Oscillators).
 * **Deployment:** Firebase Hosting (Frontend), Render (Backend).
 
+<<<<<<< HEAD
 ### Local Setup (API keys)
 1. Create `/server/.env` from `/server/.env.example`.
 2. Put your Gemini key in `GEMINI_API_KEY` (this powers both chat and the Burn reframing feature).
@@ -76,6 +77,8 @@ Gold/Amber Tones: These are warm colors that avoid the aggression often associat
 6. Start backend: `npm --prefix server install && node server/index.js`.
 7. Start frontend: `npm --prefix client install && npm --prefix client start`.
 
+=======
+>>>>>>> b59b2208e1e3c44fd5f2eb56e1c0d8b244bb918e
 ### Students
 * **Alberto Bollino**
 * **Wilma Bertilsson**
