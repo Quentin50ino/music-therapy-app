@@ -98,7 +98,13 @@ const App = () => {
     const thought = String(thoughtText || '').trim();
     if (!thought) return;
 
+    // 1. Ottieni le frasi dall'AI (l'utente aspetta un attimo qui, va bene)
     const reframes = await reframeThought(thought);
+
+    // 2. Chiudi il modale di input immediatamente per liberare la visuale
+    setShowBurnModal(false);
+
+    // 3. Innesca l'effetto visivo del fuoco (Burn Signal)
     setBurnSignal({
       id: Date.now(),
       text: thought,
@@ -106,9 +112,13 @@ const App = () => {
       originalThought: thought,
       effectStyle: 'fire-original'
     });
-    setTimeout(() => { triggerFireSound(); }, 900);
-    setBurnReframeChoices({ originalThought: thought, reframes });
-    setShowBurnModal(false);
+
+    setTimeout(() => { triggerFireSound(); }, 3000);
+
+    setTimeout(() => {
+        setBurnReframeChoices({ originalThought: thought, reframes: reframes });
+    }, 3500);
+
   }, [reframeThought, triggerFireSound]);
 
   const handleSelectReframe = useCallback((selectedReframe) => {
