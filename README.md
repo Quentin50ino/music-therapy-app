@@ -17,7 +17,9 @@ A holistic web application merging Generative AI, music therapy, and interactive
 
 3.  **Therapeutic Rituals:**
     * **Breathe Mode (L-Systems):** A guided deep-breathing interface. Chaos vanishes to reveal expanding fractal mandalas generated via **Lindenmayer Systems** (recursive mathematical structures), synchronized with the user's breath cycle.
-    * **Burn Thoughts:** A digital catharsis ritual where negative thoughts typed by the user are visually incinerated using pixel-scanning algorithms and additive blending fire effects.
+    * **Burn & Reframe Thoughts (New):** A two-step digital catharsis ritual.
+        * **Step 1 (The Burn):** Negative thoughts typed by the user are visually incinerated using pixel-scanning algorithms and additive blending fire effects.
+        * **Step 2 (The Reframe):** Once the fire fades, the AI generates **4 Cognitive Reframes**—motivational reinterpretations of the original thought. Selecting a new phrase transforms the visual environment into a "Calm" state, reinforcing positive neural pathways.
 
 ### Design Philosophy & Neuroscience
 Our primary goal was **Radical Simplicity** and **Flow State**.
@@ -28,48 +30,36 @@ Our primary goal was **Radical Simplicity** and **Flow State**.
 ### Design & Therapeutic Rationale
 The visual effects in the "Flow" section were designed based on creative computing principles and clinical literature regarding schizophrenia and sensory processing.
 
-1. The "Bokeh" Effect & Soft Blur
-The particles feature soft, blurred edges. According to neuroaesthetics and psychology literature, sharp, high-contrast images (high spatial frequency) require significant cognitive processing. Conversely, blurred or soft shapes (low spatial frequency) are processed via more "emotional" and less analytical visual pathways, effectively promoting relaxation.
-
-Visual Association: The aesthetic resembles bioluminescence (fireflies) or candlelight, evoking primal instincts of safety, warmth, and calm.
-
-2. The "Bonding" Metaphor
-The mechanic where particles gently merge and bond upon contact is a deliberate therapeutic choice. Schizophrenia is often associated with a sense of self-fragmentation or social isolation.
-
-Visual Metaphor: Witnessing separate entities softly merging to become "brighter" together serves as a powerful, non-verbal metaphor for reintegration, connection, and wholeness.
-
-3. Color Palette Strategy
-
-Dark Background: Essential for minimizing visual fatigue and eye strain, as photophobia (light sensitivity) can be common in certain stages of the condition.
-
-Gold/Amber Tones: These are warm colors that avoid the aggression often associated with red. They are chosen to stimulate a feeling of "welcome" and comfort.
+1. **The "Bokeh" Effect & Soft Blur:** The particles feature soft, blurred edges (low spatial frequency), which are processed via emotional rather than analytical visual pathways, effectively promoting relaxation compared to sharp, high-contrast shapes.
+2. **The "Bonding" Metaphor:** Witnessing separate entities softly merging to become "brighter" together serves as a powerful, non-verbal metaphor for reintegration, connection, and wholeness, countering feelings of fragmentation.
+3. **Color Palette Strategy:** Dark backgrounds minimize visual fatigue/photophobia, while Gold/Amber tones stimulate a sense of "welcome" and comfort without the aggression of red.
 
 ### Challenges, accomplishments, and lessons learned
 
 * **Challenges:**
-    * **The "Black Box" of Audio Analysis:** Spotify deprecated their Audio Features endpoint, making it impossible to get Key/BPM programmatically. We solved this by engineering a **Prompt Engineering pipeline** where Gemini acts as a music theory expert, extracting accurate metadata for famous tracks directly from its training data.
-    * **Physics Tuning:** Mapping BPM (60-180 range) to particle velocity vectors without breaking the simulation required careful calibration of the physics engine to ensure the movement remained organic, never robotic.
+    * **The "Black Box" of Audio Analysis:** Spotify deprecated their Audio Features endpoint. We engineered a **Prompt Engineering pipeline** where Gemini acts as a music theory expert, extracting accurate metadata (Key/BPM) for famous tracks directly from its training data.
+    * **Async Animation Orchestration:** Timing the "Burn" ritual was critical. We had to synchronize the asynchronous AI generation of reframes with the 3.5-second physics simulation of the fire, ensuring the motivational options appear exactly as the negative thought turns to ash.
 
 * **Accomplishments:**
-    * **Full Sensory Sync:** We achieved a system where the visuals are not just a loop, but a live interpretation of the music. If the song is sad (Minor Key) and slow (low BPM), the visualizer physically embodies that melancholy.
-    * **AI Orchestration:** Successfully chaining two AI agents (Therapist + Musicologist) to deliver a seamless user experience in under a second.
+    * **Cognitive Reframing Integration:** We moved beyond simple "destruction" of thoughts to "transformation." The app now closes the therapeutic loop by offering constructive alternatives.
+    * **Full Sensory Sync:** We achieved a system where the visuals are a live interpretation of the music. If the song is sad (Minor Key) and slow (low BPM), the visualizer physically embodies that melancholy.
 
 * **Lessons learned:**
-    * We learned that LLMs can replace traditional database APIs for static knowledge (like song keys).
-    * We specialize our understanding of **p5.js** optimization, managing hundreds of interactive particles reacting to global state changes (BPM/Key) in real-time.
+    * We learned that LLMs can replace traditional database APIs for static knowledge (like song keys) and dynamic psychological tasks (reframing).
+    * We specialized our understanding of **p5.js** optimization, managing hundreds of interactive particles reacting to global state changes (BPM/Key) in real-time.
 
 ### Technology
-* **Frontend:** React.js, p5.js, CSS3.
+* **Frontend:** React.js, p5.js, CSS3 (Glassmorphism).
 * **Backend:** Node.js, Express.js.
 * **AI & Data:**
-    * **Google Gemini 2.5 Flash:** NLP, Sentiment Analysis, and Musicological Data Extraction (Key/BPM).
+    * **Google Gemini 2.5 Flash:** NLP, Sentiment Analysis, Musicological Data, and Cognitive Reframing.
     * **Spotify API:** Track Search & Playback.
 * **Audio Engine:** Web Audio API (Real-time procedural synthesis, Binaural Beats, Oscillators).
 * **Deployment:** Firebase Hosting (Frontend), Render (Backend).
 
 ### Local Setup (API keys)
 1. Create `/server/.env` from `/server/.env.example`.
-2. Put your Gemini key in `GEMINI_API_KEY` (this powers both chat and the Burn reframing feature).
+2. Put your Gemini key in `GEMINI_API_KEY` (powers chat, music analysis, and burn reframing).
 3. Optionally add Spotify keys (`SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`) for music suggestions.
 4. Create `/client/.env` from `/client/.env.example`.
 5. Set `REACT_APP_API_URL=http://localhost:3001` in the client env file.
@@ -77,29 +67,10 @@ Gold/Amber Tones: These are warm colors that avoid the aggression often associat
 7. Start frontend: `npm --prefix client install && npm --prefix client start`.
 
 ### Students
-* **Alberto Bollino**
-* **Wilma Bertilsson**
-* **Matteo Orlandin**
+* **Alberto Bollino:** server-side development and cloud infrastructure.
+* **Wilma Bertilsson:** graphics, readme, slides and screenshots.
+* **Matteo Orlandin:** client-side development and graphics improvements.
 
 ### Links
 * **GitHub Repo:** [Link to Github Repository](https://github.com/Quentin50ino/music-therapy-app)
-* **Web App Demo:** [Direct link to the deployed application](https://music-therapy-app-246ba.web.app/)
-* **Video Demo:** [INSERT VIDEO LINK HERE]
-* **Presentation:** [INSERT SLIDES LINK HERE]
-
-### 1 thumbnail image related to the projects
-![Project Thumbnail](assets/thumbnail.jpg)
-*(Format: 1024x768. Representative image, e.g., Flow Mode)*
-
-### Pictures
-![Flow Mode Chat](assets/screenshot_flow.jpg)
-*Flow Mode featuring the AI Chat interface and the living particle ecosystem.*
-
-![Breathe Mode](assets/screenshot_breathe.jpg)
-*Breathe Mode with expanding concentric fractals (L-Systems) synchronized to breath cycles.*
-
-![Burn Ritual](assets/screenshot_burn.jpg)
-*The "Burn Thoughts" ritual with the realistic particle fire effect.*
-
-### Video
-[INSERT VIDEO LINK OR EMBED HERE]
+* **Web:** [Link to the deployed application](https://music-therapy-app-246ba.web.app/)
