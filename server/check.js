@@ -3,39 +3,37 @@ require('dotenv').config();
 const apiKey = process.env.GEMINI_API_KEY;
 const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
 
-console.log("Chiedo a Google la lista dei modelli disponibili...");
+console.log("Checking available models...");
 
 import('node-fetch').then(({ default: fetch }) => {
     fetch(url)
     .then(response => response.json())
     .then(data => {
         if (data.error) {
-            console.error("ERRORE API:", data.error.message);
+            console.error("ERROR API:", data.error.message);
         } else {
-            console.log("MODELLI DISPONIBILI PER TE:");
+            console.log("AVAILABLE MODELS:");
             data.models.forEach(m => {
-                // Mostra solo i modelli che generano contenuto
                 if(m.supportedGenerationMethods.includes("generateContent")) {
                     console.log(`${m.name.replace('models/', '')}`);
                 }
             });
         }
     })
-    .catch(err => console.error("Errore di rete:", err));
+    .catch(err => console.error("Network Error:", err));
 }).catch(() => {
-    // Fallback se node-fetch non è installato, usiamo la fetch nativa di Node 18+
     fetch(url)
     .then(response => response.json())
     .then(data => {
         if (data.models) {
-             console.log("MODELLI DISPONIBILI PER TE:");
+             console.log("AVAILABLE MODELS:");
              data.models.forEach(m => {
                 if(m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")) {
                     console.log(`${m.name.replace('models/', '')}`);
                 }
             });
         } else {
-            console.log("Risposta:", data);
+            console.log("Response:", data);
         }
     });
 });
