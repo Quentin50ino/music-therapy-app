@@ -74,3 +74,6 @@ The visual effects in the "Flow" section were designed based on creative computi
 ### Links
 * **GitHub Repo:** [Link to Github Repository](https://github.com/Quentin50ino/music-therapy-app)
 * **Web:** [Link to the deployed application](https://music-therapy-app-246ba.web.app/)
+* **Document:** [Link to the document](https://docs.google.com/document/d/1UZn3E8wR1myCi0YWj8gV4qTlko4INXFd-F-2Sqy_s2A/edit?usp=sharing)
+* **Slides:** [Link to the slides](https://docs.google.com/presentation/d/1gS86u_rbCEXoV-6_YU0IcXCI1wVqut_pdi_nQkMutaI/edit?usp=sharing)
+* **Demo:** [Link to the video demo](https://www.youtube.com/watch?v=vko_JChvME4&feature=youtu.be)
